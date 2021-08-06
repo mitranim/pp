@@ -1,0 +1,42 @@
+[class*=sf-icon] {
+  // Size styles.
+  &.size-half-again {
+    font-size: 1.5em;
+  }
+  &.size-double {
+    font-size: 2em;
+  }
+  &.size-triple {
+    font-size: 3em;
+  }
+  // Offset any icon, not just inline. Double the distance because in flex
+  // containers, the normal distance between inline-block children is negated.
+  &:not(:first-child) {
+    margin-left: 0.3em;
+  }
+  &:not(:last-child) {
+    margin-right: 0.3em;
+  }
+
+  &.size-4-to-3 {
+    width: 1em;
+    height: 0.75em;
+    vertical-align: initial;
+  }
+
+  /**
+   * Register background SVG icons.
+   */
+
+  // Brand icon.
+  @include svg-custom(prosto-poi-icon);
+  // @include svg-custom(prosto-poi-icon-white);
+  // @include svg-custom(poister);
+  // @include svg-custom(poister-white);
+  @include svg-custom(skill-level-basic);
+  @include svg-custom(skill-level-advanced);
+  @include svg-custom(skill-level-masterful);
+  @include svg-custom(flag-ru);
+  @include svg-custom(flag-en);
+  @include svg-custom(flag-jp);
+}

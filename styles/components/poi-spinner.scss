@@ -1,0 +1,41 @@
+.poi-spinner {
+
+  // Layout.
+  min-height: 1em;
+  position: relative;
+
+  // Background layout.
+  &::after {
+    // Layout.
+    content: '';
+    @include fit-full;
+
+    // Image.
+    @include bg-svg-custom(prosto-poi-icon);
+    background-repeat: no-repeat;
+    background-size: 1em;
+    background-position: 50% 50%;
+
+    // Animate rotation.
+    @keyframes spin {100% {transform: rotate(-360deg)}}
+    animation: spin 3s linear infinite;
+  }
+
+  // Use white icon with inverse themes.
+  [class*=theme-]:not([class*=theme-text-]) &::after {
+    @include bg-svg-custom(prosto-poi-icon-white);
+  }
+
+  // Larger sizes.
+  &.size-medium {font-size: 2em}
+  &.size-large  {font-size: 4em}
+  &.size-huge   {font-size: 6em}
+
+  // Faded option.
+  &.faded {opacity: 0.5}
+
+  // Background size options.
+  &.bg-medium::after {background-size: 25%}
+  &.bg-large::after  {background-size: 50%}
+  &.bg-huge::after   {background-size: 100%}
+}

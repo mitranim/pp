@@ -1,0 +1,170 @@
+body {
+  width: 100%;
+}
+
+.block {
+  display: block;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.row-inline {
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.column-inline {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.fit {
+  width: 100%;
+  height: 100%;
+}
+
+.narrow {
+  @include media-mix(width, 80%);
+}
+
+// Wide on narrow displays and narrow on wide displays.
+// Expects to be a block or a flex child in a vertical flex layout.
+.narrow-inverse {
+  @include media-mix-inverse(width, 100%);
+}
+
+// Centered version of .narrow-inverse
+.narrow-inverse-center {
+  // Dimensions.
+  @include media-mix-inverse(width, 100%);
+  // Center as block.
+  margin-left: auto;
+  margin-right: auto;
+  // Center as flex child.
+  align-self: center;
+  // Center text.
+  text-align: center;
+}
+
+.center-by-margins {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// NOTE: must be used inside a normal block (not a flex container), otherwise
+// this fails in FF.
+.fixed-height-half {
+  // Layout.
+  display: block;
+  position: relative;
+  height: 0;
+  width: 100%;
+  padding: 0;
+  @include sf-scroll-v;
+
+  // Height = width / 2
+  padding-bottom: 50%;
+}
+
+.fit-full                    {@include fit-full;}
+.fit-left-half               {@include fit-left-half;}
+.fit-right-half              {@include fit-right-half;}
+.fit-auto                    {@include fit-auto;}
+.fit-corner-top-right        {@include fit-corner-top-right;}
+.fit-corner-top-right-spaced {@include fit-corner-top-right-spaced;}
+
+@include media-prefixed(wide) {
+  width: 100%;
+}
+
+@include media-prefixed(hide) {
+  display: none;
+}
+
+.fat-block {
+  // Layout.
+  display: block;
+  position: relative;
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+
+  // 16:9 aspect ratio.
+  padding-bottom: 56.25%;
+
+  // 4:3 aspect ratio.
+  &.fat-block-4-3 {
+    padding-bottom: 75%;
+  }
+
+  .fat-block-body {
+    position: absolute;
+    @include sf-trbl(0, 0, 0, 0);
+    height: 100%;
+    width: 100%;
+    @include sf-scroll-v;
+  }
+}
+
+.relative {
+  position: relative;
+}
+
+/******************************** Whitespace *********************************/
+
+.nocontainer {
+  padding: 0;
+  > *:not(:last-child) {margin-bottom: 0}
+}
+
+@include media-prefixed(pad) {
+  padding: $sf-space;
+}
+
+.pad-half {
+  padding: $sf-space / 2;
+}
+
+.pad-v {
+  padding-top: $sf-space;
+  padding-bottom: $sf-space;
+}
+
+@include media-prefixed(pad-h) {
+  padding-left: $sf-space;
+  padding-right: $sf-space;
+}
+
+@include media-prefixed(space-out) {
+  @include sf-space-out-vertical;
+}
+
+@include media-prefixed(space-out-h) {
+  @include sf-space-out-horizontal;
+}
+
+.space-out-half {
+  @include sf-space-out-vertical($sf-space / 2);
+}
+
+@include media-prefixed(space-out-h-half) {
+  @include sf-space-out-horizontal($sf-space / 2);
+}
+
+@include media-prefixed(margin) {margin: $sf-space}
+
+@include media-prefixed(margin-top)    {margin-top: $sf-space}
+@include media-prefixed(margin-right)  {margin-right: $sf-space}
+@include media-prefixed(margin-bottom) {margin-bottom: $sf-space}
+@include media-prefixed(margin-left)   {margin-left: $sf-space}
+
+@include media-prefixed(margin-top-half)    {margin-top: $sf-space / 2}
+@include media-prefixed(margin-right-half)  {margin-right: $sf-space / 2}
+@include media-prefixed(margin-bottom-half) {margin-bottom: $sf-space / 2}
+@include media-prefixed(margin-left-half)   {margin-left: $sf-space / 2}

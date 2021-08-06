@@ -1,0 +1,27 @@
+.html-tooltip--host {
+  position: relative;
+}
+
+.html-tooltip {
+  // Layout.
+  display: block;
+  position: absolute;
+  bottom: 100%;
+  min-width: 12em;
+
+  // Hide by default.
+  visibility: hidden;
+
+  // Whitespace.
+  padding: $sf-space / 2;
+  @include sf-space-out-vertical($sf-space / 2);
+
+  // Cosmetic.
+  // font-size: $sf-font-size-smaller;
+  background-color: $sf-color-background;
+  @include sf-shadow-medium;
+}
+
+.html-tooltip--host:hover .html-tooltip {
+  visibility: visible;
+}

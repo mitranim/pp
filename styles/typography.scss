@@ -1,0 +1,136 @@
+/**
+ * Typography-related styles and mixins.
+ */
+
+// Normalise link colours.
+a {
+  color: $sf-color-text;
+}
+
+dt {
+  color: $color-primary;
+  [class*=theme-] &:not[class*=theme-] {
+    color: inherit;
+  }
+}
+
+sub, sup {
+  padding: $sf-space / 4 $sf-space / 2;
+  border-radius: $sf-border-radius;
+}
+
+.text-white {
+  color: darken(white, 1%);
+}
+
+.text-ellipsis {
+  display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.text-nowrap {
+  white-space: nowrap;
+}
+
+.text-break {
+  white-space: break-spaces;
+}
+
+.text-gray {
+  color: gray;
+  .theme-primary &, .theme-warn & {
+    color: lightgray;
+  }
+}
+
+.text-yellow {
+  color: yellow;
+}
+
+.text-red {
+  color: $color-red;
+}
+
+.text-rem {
+  font-size: 1rem;
+}
+
+.text-small {
+  font-size: $sf-font-size-small;
+}
+
+.text-large {
+  font-size: $sf-font-size-large;
+}
+
+.text-smaller {
+  font-size: $sf-font-size-smaller;
+}
+
+.text-larger {
+  font-size: $sf-font-size-larger;
+}
+
+.text-size-double {
+  font-size: 2em;
+}
+
+.text-straight {
+  font-style: normal;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
+.text-placeholder {
+  @include text-placeholder;
+}
+
+.header-decorated {
+  // Layout.
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  // Cosmetic.
+  text-align: center;
+
+  > * {
+    flex: 1;
+  }
+
+  &::before, &::after {
+    // Layout.
+    content: '';
+    flex: 1;
+    display: inline-block;
+    vertical-align: middle;
+    min-width: 1em;
+    max-width: 6em;
+    height: 0;
+
+    // Cosmetic.
+    border: 1px solid lightgray;
+  }
+
+  &::before {
+    margin-right: $sf-space;
+  }
+
+  &::after {
+    margin-left: $sf-space;
+  }
+}
+
+.indicate-tooltip[data-sf-tooltip]:not([data-sf-tooltip='']),
+[data-sf-tooltip]:not([data-sf-tooltip='']) .indicate-tooltip {
+  cursor: help;
+  border-bottom: 1px dotted gray;
+  &[class*=theme-]:not([class*=theme-text-]), [class*=theme-]:not([class*=theme-text-]) & {
+    border-bottom: 1px dotted lightgray;
+  }
+}

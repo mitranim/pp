@@ -1,0 +1,60 @@
+.sidenav {
+  display: flex;
+  flex-direction: column;
+
+  > :not(div), .sidenav-item, .sidenav-sub-item {
+    // Layout.
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    // Whitespace.
+    padding: $sf-space;
+
+    &::after {
+      // Whitespace.
+      margin-left: $sf-space;
+
+      // Icon.
+      @include fa-icon-inline;
+      content: $fa-var-chevron-right;
+      @include sf-transitions(all);
+    }
+    &:not(.active):not(:hover):not(:focus):not(:active)::after {
+      transform: translateX(-$sf-space / 2);
+      opacity: 0;
+    }
+    &:hover, &:focus {
+      background-color: $color-default-active;
+    }
+    &.active {
+      background-color: $color-default-selected;
+    }
+    > span {
+      @include sf-transitions(all);
+      display: inline-block;
+    }
+  }
+
+  .sidenav-subsection {
+    border-left: $sf-space / 2 solid $color-default-selected;
+  }
+
+  .sidenav-sub-item {
+    font-size: $sf-font-size-smaller;
+    color: $color-primary;
+    // padding-left: $sf-space * 2;
+    // margin-left: $sf-space;
+    &.hover:not(:root) {
+      background-color: rgba($color-primary, 0.03);
+    }
+    &.active:not(:root) {
+      background-color: $color-default-active;
+    }
+  }
+
+  label.sidenav-item.active::after {
+    content: $fa-var-chevron-down;
+  }
+}

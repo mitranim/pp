@@ -1,0 +1,51 @@
+.order-item {
+
+  $height: 10em;
+
+  // Layout.
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: $height;
+
+  // Image thumbnail.
+  > .thumbnail {
+    // Layout.
+    display: inline-block;
+    width: $height;
+    height: $height;
+    // Cosmetic.
+    @include image-backdrop;
+  }
+
+  // Description.
+  > .description {
+    // Layout.
+    flex: 1;
+    display: block;
+
+    // Whitespace.
+    padding: $sf-space;
+
+    // Cosmetic.
+    @include sf-link-decorations;
+    border: none;
+    @include sf-register-interactive-selector;
+
+    // Don't allow text overflow. TODO prevent midline cutoff.
+    overflow: hidden;
+  }
+
+  // Price and controls.
+  > .controls {
+    // Layout.
+    display: flex;
+    width: $height * 2;
+    @include sf-eq-sm {width: $height}
+    @include sf-eq-md {width: $height}
+    height: $height;
+
+    // Button styling.
+    .count {@include centered-padded;}
+  }
+}

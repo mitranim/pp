@@ -1,0 +1,369 @@
+/********************************** Global ***********************************/
+
+.shadow {
+  @include sf-shadow-weak;
+}
+
+.shadow-narrow {
+  // box-shadow: inset 2px 2px 0 2px gray, inset -2px -2px 0 2px gray;
+  box-shadow: inset 1px 1px 0 1px gray, inset -1px -1px 0 1px gray;
+}
+
+.shadow-thin {
+  @include sf-shadow-thin;
+}
+
+.shadow-medium {
+  @include sf-shadow-medium;
+}
+
+.nobg:not(:root) {
+  &, &:hover, &:active, &:focus, &.active {
+    &[disabled], &:not([disabled]) {
+      background-color: transparent;
+    }
+  }
+}
+
+// Image preview styles.
+.preview {
+  // Layout.
+  display: block;
+  width: auto;
+  height: 8em;
+
+  // Backdrop.
+  @include background-cover;
+}
+
+.noborder {
+  border: none;
+}
+
+.grid-item, a.grid-item {
+  display: block;
+  @extend .container;
+  // Active style.
+  &.active {
+    // @include image-backdrop;
+    // color: $sf-color-background;
+    @extend .shadow-narrow;
+  }
+}
+
+.outline-thick {
+  outline: 3px solid gray;
+}
+
+[disabled] {
+  opacity: 0.7;
+}
+
+.background-cover {
+  @include background-cover;
+  // background-position: center bottom;
+}
+
+// .shadow-inset-top-bottom {
+//   // @include sf-shadow-inset-top-bottom;
+//   $color: rgba($sf-color-text, 0.4);
+//   box-shadow:
+//     inset 0 -9px 9px -9px $color,  // top
+//     inset -3px 0 3px -3px $color,  // right
+//     inset 3px 0 3px -3px $color,   // left
+//     inset 0 9px 9px -9px $color;   // bottom
+// }
+
+.fade {
+  opacity: 0.5;
+}
+
+.border {
+  @include sf-border-weak;
+}
+
+.table-striped {
+  tr:nth-child(2n+1) {
+    background-color: $color-default-active;
+  }
+}
+
+.stripe:nth-of-type(2n+1) {
+  background-color: $color-default-active;
+}
+
+.underlay {
+  $text-color: darken(white, 1%);
+  color: $text-color;
+  // background-color: rgba(sf-contrasting-color($text-color), 0.4);
+  background-color: $sf-color-overlay;
+}
+
+// Styles for sf-collapse with an option to toggle labels externally. Supresses
+// the normal [disabled] styles in order to use [disabled] to force them to stay
+// open.
+.sf-collapse .sf-collapse-head[data-toggle-active] {
+  &:not([disabled]) {
+    &.active ~ .sf-collapse-body {
+      box-shadow: 0 1px 0 0 $color-default-selected;
+    }
+  }
+  &[disabled] {
+    background-color: rgba(map-get($sf-color-map-primary, default), 0.1);
+    opacity: 1;
+    cursor: default;
+    &::after {
+      content: none;
+    }
+  }
+}
+
+.cursor-help {
+  cursor: help;
+}
+
+.svg-container {
+  svg {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.fill-gray {
+  svg {
+    fill: gray;
+  }
+}
+
+.stroke-gray {
+  svg, svg line {
+    stroke: gray;
+  }
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.counter-reset {
+  counter-reset: section;
+}
+
+.counter {
+  counter-increment: section;
+  &::before {
+    opacity: 0.6;
+    content: counter(section) ':';
+  }
+}
+
+.line-vertical {
+  border-right: 1px solid lightgray;
+  margin-left: $sf-space;
+  margin-right: $sf-space;
+}
+
+.background-image-circle {
+  // Layout.
+  display: inline-block;
+  vertical-align: middle;
+  width: 2em;
+  height: 2em;
+
+  // Cosmetic.
+  @include background-cover;
+  border-radius: 50%;
+}
+
+.border-colored {
+  position: relative;
+  &::before {
+    content: '';
+    @include fit-full;
+    border: 1px solid;
+    opacity: 0.3;
+  }
+}
+
+.background-bar {
+  $c: $color-primary;
+
+  // Layout.
+  position: relative;
+
+  // Fill.
+  .background-fill {
+    display: block;
+    position: absolute;
+    @include sf-trbl(0, auto, 0, 0);
+    background-image: linear-gradient(to right, rgba($c, 0.1), rgba($c, 0.4));
+    @include sf-transitions(all);
+  }
+}
+
+/******************************** Components *********************************/
+
+// Generic payment button.
+%payment-button {
+  // (Broken in FF)
+  // // Layout.
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
+
+  // Dimensions.
+  width: 8em;
+  height: 2em;
+
+  // Size.
+  font-size: 2em;
+}
+
+// "paypal" button.
+.paypal-button {
+  @extend %payment-button;
+  // Background.
+  background-image: url(/images/paypal.png);
+  @include background-cover;
+  background-size: contain;
+}
+
+// "preorder" button.
+.preorder-button {
+  @extend %payment-button;
+}
+
+.interactive-triangle-bottom {
+  position: relative;
+
+  &:hover, &:focus, &:active, &.active {
+    &::after {
+      content: '';
+
+      // Layout.
+      display: block;
+      position: absolute;
+      @include sf-trbl(100%, 0, auto, 0);
+      margin-left: auto;
+      margin-right: auto;
+      z-index: $sf-z-index-tooltip - 1;
+
+      // Arrow.
+      width: 0;
+      height: 0;
+      border: $sf-space solid transparent;
+    }
+  }
+
+  &:hover, &:focus, &:active {
+    &::after {
+      border-top: $sf-space * 0.75 solid $color-default-active;
+    }
+  }
+
+  &.active::after {
+    border-top: $sf-space * 0.75 solid $color-default-selected;
+  }
+}
+
+/********************************* Overrides *********************************/
+
+.sf-embed {
+  @include image-backdrop;
+}
+
+.sf-input, input, textarea {
+  &.placeholder-error::placeholder {
+    color: rgba($color-red, 0.7);
+  }
+}
+
+.sf-tabset > .sf-tabset-head > .sf-tab-head.active {
+  @include shadow-inset;
+}
+.sf-tabset > .sf-tabset-body > .sf-tab-body {padding: 0}
+
+.sf-label:not(.sf-label-column) {
+  align-items: stretch;
+}
+
+.sf-modal-close:empty {
+  font-size: 14pt;
+}
+
+// .sf-modal-body {
+//   outline: 0.5rem solid rgba($sf-color-overlay, 0.3);
+// }
+
+[data-sf-tooltip]::before, [data-sf-tooltip]::after {
+  transition: none;
+  transition-duration: $sf-transition-duration / 2;
+}
+
+article, .sf-article {
+  .article-info {
+    // Base styles.
+    @extend .container;
+
+    // Layout.
+    display: inline-block;
+    float: right;
+    min-width: 15%;
+    max-width: 25%;
+    @include sf-eq-sm {
+      max-width: 33%;
+    }
+    margin-left: $sf-space;
+
+    // Cosmetic.
+    border: 1px solid rgba($color-primary, 0.3);
+  }
+}
+
+.poi-system-atom {
+  display: inline-block;
+  vertical-align: top;
+  width: 6em;
+  &:not(:last-child) {
+    margin-right: $sf-space;
+  }
+}
+
+.poi-system-atom--square {
+  display: block;
+  width: 6em;
+  height: 6em;
+  @include sf-shadow-weak;
+}
+
+[data-expand-for]:not(.active) {
+  display: none;
+}
+
+.hover-guest {
+  opacity: 0;
+  @include sf-transitions(all);
+  .hover-host:hover & {
+    opacity: 1;
+  }
+}
+
+[data-modal-trigger]:not([disabled]) {
+  @extend .interactive;
+}
+
+.hover-bg-zoom {
+  background-size: 100%;
+  @include sf-transitions(all);
+}
+
+.hover-bg-zoom:hover {
+  background-size: 120%;
+}
+
+.sticky-top {
+  @include sticky;
+  top: 0;
+  &.--z {z-index: 1;}
+}

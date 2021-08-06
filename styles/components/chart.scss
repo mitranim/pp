@@ -1,0 +1,105 @@
+/**
+ * Chartjs.
+ */
+
+.chart-container {
+  @include sf-flex-host-center;
+  font-size: $sf-font-size-smaller;
+}
+
+.polararea-legend li {
+  display: flex;
+  flex-direction: row;
+  justify-items: flex-start;
+  align-items: center;
+}
+
+.polararea-legend-icon {
+  // Layout.
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+
+  // Cosmetic.
+  margin-right: $sf-space / 2;
+  outline: 1px solid $sf-color-umbra;
+}
+
+/**
+ * Custom chart.
+ */
+
+.chart {
+
+  $c: $color-primary;
+
+  // Layout.
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+
+  // // Default dimensions.
+  // min-width: 7em;
+  // width: 7em;
+
+  .chart-bar-container {
+    // Layout.
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    position: relative;
+    // Default dimensions.
+    width: 100%;
+    height: 10em;
+
+    // Cosmetic.
+    // background-color: rgba($c, 0.2);
+    background-image: linear-gradient(to top, rgba($c, 0.1), rgba($c, 0.2));
+    outline: 1px solid $c;
+
+    .chart-bar {
+      // Layout.
+      display: block;
+      width: 100%;
+
+      // Cosmetic.
+      // background-color: rgba($c, 0.7);
+      background-image: linear-gradient(to top, rgba($c, 0.6), $c);
+      outline: 1px solid $c;
+    }
+
+    &[data-tip]:not([data-tip=''])::before {
+      // Layout.
+      content: attr(data-tip);
+      display: block;
+      position: absolute;
+      bottom: 50%;
+      right: 50%;
+      transform: translateY(50%) translateX(50%);
+
+      // Cosmetic.
+      font-size: $sf-font-size-smaller;
+      padding: $sf-space / 2;
+      // color: lighten($sf-color-text, 30%);
+      color: sf-contrasting-color($sf-color-text);
+      // background-color: rgba(white, 0.5);
+      background-color: rgba($c, 0.5);
+      // border: 1px solid rgba($c, 0.5);
+    }
+  }
+
+  .chart-label {
+    // Layout.
+    @include sf-flex-host-center;
+    text-align: center;
+    flex-direction: column;
+
+    // Cosmetic.
+    padding: $sf-space / 2;
+    @include sf-space-out-vertical($sf-space / 2);
+    font-size: $sf-font-size-smaller;
+    color: lighten($sf-color-text, 30%);
+  }
+}

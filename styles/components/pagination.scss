@@ -1,0 +1,35 @@
+.pagination {
+  // Layout.
+  display: block;
+  text-align: center;
+
+  // Whitespace.
+  padding: $sf-space;
+
+  .pagination-buttons {
+    display: block;
+    @include sf-space-out-horizontal($sf-space / 2);
+
+    > * {
+      display: inline-block;
+      padding: $sf-space / 2;
+      min-width: 3em;
+      height: 3em;
+      line-height: calc(3em - #{$sf-space});
+    }
+
+    .prev::before, .next::after {
+      @include fa-icon-inline;
+    }
+
+    .prev::before {
+      content: $fa-var-chevron-left;
+      margin-right: 0.4em;
+    }
+
+    .next::after {
+      content: $fa-var-chevron-right;
+      margin-left: 0.4em;
+    }
+  }
+}

@@ -1,0 +1,94 @@
+.experience {
+
+  $w: 16em;
+  // $w: 80%;
+  $h: 2em;
+  // $c: $color-orange;
+  $c: $color-primary;
+
+  // Layout.
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .experience-level {
+    // Layout.
+    display: block;
+    // Default dimensions.
+    width: $h * 1.25;
+    height: $h * 1.25;
+    line-height: $h * 1.25;
+
+    // Cosmetic.
+    text-align: center;
+    background-color: rgba($c, 0.1);
+    border-radius: $sf-border-radius;
+    border: 1px solid $c;
+  }
+
+  .experience-bar {
+    // Layout.
+    display: block;
+    position: relative;
+    // Default dimensions.
+    width: $w;
+    height: $h;
+
+    // Cosmetic.
+    font-size: $sf-font-size-smaller;
+    background-color: rgba($c, 0.2);
+    outline: 1px solid $c;
+
+    .experience-fill {
+      // Layout.
+      display: block;
+      height: 100%;
+
+      // Cosmetic.
+      // background-color: rgba($c, 0.7);
+      background-image: linear-gradient(to right, rgba($c, 0.6), $c);
+    }
+
+    &[data-next]:not([data-next=''])::after {
+      content: attr(data-next);
+
+      // Layout.
+      display: block;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      bottom: 0;
+      line-height: $h;
+
+      // Cosmetic.
+      text-align: center;
+      outline: 1px solid $c;
+      margin-left: 1px;
+      padding: 0 $sf-space / 2;
+      background-color: rgba($c, 0.1);
+    }
+
+    &[data-tip]:not([data-tip=''])::after {
+      content: attr(data-tip);
+
+      // Layout.
+      display: block;
+      position: absolute;
+      right: 50%;
+      transform: translateX(50%);
+      top: 0;
+      bottom: 0;
+      line-height: $h;
+
+      // Cosmetic.
+      text-align: center;
+      // outline: 1px solid $c;
+      // outline: 1px solid sf-contrasting-color($c);
+      margin-left: 1px;
+      padding: 0 $sf-space / 2;
+      color: sf-contrasting-color($c);
+      // background-color: rgba($c, 0.5);
+      background-color: $c;
+    }
+  }
+}

@@ -1,0 +1,53 @@
+.to-cart {
+
+  // Layout.
+  display: flex;
+  height: 4em;
+
+  // Negate typographic offsets.
+  *, :first-child {
+    margin: 0;
+  }
+
+  // Wrapper styling.
+  .wrapper {
+    // Flex layout host. Items are stretched by default.
+    display: flex;
+
+    // Typography.
+    text-align: center;
+
+    // Smaller font on narrow displays.
+    @include sf-eq-sm {font-size: 80%}
+    @include sf-gt-sm {font-size: 90%}
+
+    // Border.
+    &:not(.carted) {
+      border: 0.2rem solid map-get($sf-color-map-accent, default);
+    }
+    &.carted {
+      border: 0.2rem solid map-get($sf-color-map-primary, default);
+    }
+  }
+
+  // Price styling.
+  .price {
+    display: flex;
+    align-items: center;
+    padding: 0 2 * $sf-space;
+  }
+
+  // Marker button styling.
+  .marker {
+    // Slightly bigger horizontal padding than default.
+    padding-left: $sf-space;
+    padding-right: $sf-space;
+  }
+
+  .count {@include centered-padded;}
+
+  // Prevents cursor flicker on ajax-driven submissions.
+  button[disabled] {
+    cursor: pointer;
+  }
+}

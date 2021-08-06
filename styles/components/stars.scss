@@ -1,0 +1,73 @@
+.stars-container {
+  // Layout.
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+
+  // Whitespace.
+  white-space: nowrap;
+
+  .star, .star-button {
+    // Layout.
+    display: inline-block;
+    width: 1.5em;
+    height: 1em;
+
+    // Icon.
+    @include fa-icon-inline;
+    @extend .fa-dot;
+    &.star-o:not(.active) {
+      @extend .fa-star-o;
+    }
+
+    // Whitespace.
+    margin: 0;
+    padding: 0;
+  }
+
+  .star.active {
+    @extend .fa-star;
+  }
+
+  .star-button {
+    // Cosmetic.
+    cursor: pointer;
+
+    &.star-button-delete {
+      // Put after other buttons.
+      order: 1;
+      &::before {
+        content: '×';
+      }
+      color: map-get($sf-color-map-warn, default);
+    }
+
+    &:not(.star-button-delete) {
+      @extend .fa-dot;
+    }
+
+    &.active:not(.star-button-delete) {
+      @extend .fa-star;
+    }
+  }
+
+  &.clickable:hover {
+    // Points to be added.
+    .star-button:not(.star-button-delete) {
+      @extend .fa-star;
+    }
+    // Neutral points after the hovered button.
+    .star-button:hover ~ .star-button:not(.star-button-delete) {
+      @extend .fa-dot;
+    }
+    // Points to be removed.
+    .star-button:hover ~ .star-button:not(.star-button-delete).active {
+      @extend .fa-star-o;
+    }
+    // When the delete button is hovered, mark all active stars for deletion.
+    .star-button-delete:hover ~ .star-button {
+      @extend .fa-star-o;
+    }
+  }
+}

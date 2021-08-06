@@ -1,0 +1,26 @@
+.marketing-highlight {
+  // Layout.
+  display: block;
+
+  // Typography.
+  text-align: center;
+
+  > [style*=background-image] {
+    // Dimensions.
+    display: block;
+    width: 100%;
+    height: 12em;
+    // padding-bottom: 100%;
+
+    // Background image style.
+    @include background-cover;
+    background-size: 100%;
+
+    @include sf-transitions(all);
+  }
+
+  // Enlarge on hover.
+  &:hover > [style*=background-image] {
+    background-size: 120%;
+  }
+}

@@ -1,0 +1,19 @@
+.order-gist {
+
+  // Layout.
+  display: block;
+
+  // Cosmetic.
+  @include sf-shadow-thin;
+
+  .order-gist-header {
+    // Layout.
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+
+    // Whitespace.
+    margin: 0;
+  }
+}

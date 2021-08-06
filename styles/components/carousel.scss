@@ -1,0 +1,68 @@
+@mixin no-bg {
+  &:not(:root) {
+    &, &:hover, &:active {
+      background: none;
+    }
+  }
+}
+
+[data-carousel] {
+  position: relative;
+}
+
+[data-carousel-dots] {
+  display: block;
+  position: absolute;
+  @include sf-trbl($sf-space * 2, $sf-space * 2, auto, auto);
+  @include sf-space-out-horizontal($sf-space / 2);
+}
+
+.carousel-dot {
+  // Layout.
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+
+  // Cosmetic.
+  @include fa-icon;
+  cursor: pointer;
+  font-size: 2em;
+  color: white;
+  opacity: 0.25;
+  &::before {content: $fa-var-circle-o}
+  &:hover, &.active {
+    opacity: 1;
+    &::before {content: $fa-var-circle}
+  }
+  @include no-bg;
+}
+
+button.carousel-dot {@extend .sf-button-flat;}
+
+[data-carousel-prev], [data-carousel-next] {
+  // Layout.
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  // Cosmetic.
+  @include fa-icon;
+  color: white;
+  font-size: 4em;
+  opacity: 0.5;
+  &:hover {opacity: 1}
+  @include no-bg;
+}
+
+button[data-carousel-prev], button[data-carousel-next] {@extend .sf-button-flat;}
+
+[data-carousel-prev] {
+  left: $sf-space;
+  &::before {content: $fa-var-chevron-circle-left}
+}
+
+[data-carousel-next] {
+  right: $sf-space;
+  &::before {content: $fa-var-chevron-circle-right}
+}

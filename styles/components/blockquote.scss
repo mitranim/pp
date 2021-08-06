@@ -1,0 +1,93 @@
+blockquote {
+  $big-size: 6em;
+  $image-size: $big-size - 1em;
+
+  // Layout.
+  display: block;
+  position: relative;
+
+  // Whitespace.
+  padding: $sf-space 4em;
+  &.blockquote-with-image:not(.blockquote-small) {
+    padding: $sf-space (4em + $big-size) $sf-space 4em;
+  }
+  @include sf-space-out-vertical($sf-space / 2);
+
+  &::before, &::after {
+    // Layout.
+    display: block;
+    position: absolute;
+    line-height: 1;
+    font-size: $big-size;
+
+    // Cosmetic.
+    font-family: Georgia, serif;
+    color: lightgray;
+    text-shadow: 1px 2px 3px lightgray;
+  }
+
+  &::before {
+    // Cosmetic.
+    content: '“';
+    // Layout.
+    top: unquote('calc(#{$sf-space} - 0.05em)');
+    left: $sf-space;
+  }
+
+  &::after {
+    // Cosmetic.
+    content: '„';
+    // Layout.
+    right: $sf-space;
+    bottom: $sf-space;
+  }
+
+  &.blockquote-with-image:not(.blockquote-small)::after {
+    right: calc(1em + #{$sf-space});
+  }
+
+  .blockquote-signature {
+    // Typography.
+    text-align: right;
+    font-style: italic;
+
+    // Cosmetic.
+    @include sf-space-out-horizontal($sf-space / 4);
+    &, a {color: gray}
+
+    // &::before {
+    //   content: '— ';
+    // }
+  }
+
+  /**
+   * Image styles (photo, avatar, etc).
+   */
+  .blockquote-image-container {
+    // Layout.
+    position: absolute;
+    width: $image-size;
+    @include sf-trbl(0, $sf-space, $sf-space, auto);
+
+    // Inner layout.
+    @include sf-flex-host-center;
+  }
+
+  .blockquote-image {
+    // Layout.
+    display: block;
+    width: $image-size;
+    height: $image-size;
+
+    // Cosmetic.
+    @include background-cover;
+    border-radius: 50%;
+    @include sf-shadow-thin;
+  }
+
+  // Hide images on small displays.
+  &.blockquote-small .blockquote-image-container,
+  &.blockquote-small .blockquote-image {
+    display: none;
+  }
+}

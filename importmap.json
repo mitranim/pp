@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "path": "https://deno.land/std@0.100.0/path/mod.ts",
+    "afr": "https://deno.land/x/afr@0.5.1/afr.ts",
+    "fpx": "./node_modules/fpx/fpx.mjs",
+    "espo": "./node_modules/espo/espo.mjs",
+    "prax": "./node_modules/prax/str.mjs",
+    "@mitranim/jol": "./node_modules/@mitranim/jol/jol.mjs",
+    "imperouter": "./node_modules/imperouter/imperouter.mjs",
+    "marked": "./node_modules/marked/lib/marked.esm.js"
+  }
+}

@@ -1,0 +1,196 @@
+@mixin checkbox-icon-styles($color, $icon-base, $icon-active, $icon-selected) {
+  $color-contrasting: sf-contrasting-color($color);
+
+  // Icon.
+  @include fa-icon-inline;
+  vertical-align: initial;
+  @extend .fa-#{$icon-base};
+
+  // Cosmetic.
+  color: $color;
+  .theme-primary &, .theme-warn &, &.checkbox-light {
+    color: $color-contrasting;
+  }
+
+  @if $icon-active {
+    &:not([disabled]):not(.active) {
+      &:hover, &:active {
+        @extend .fa-#{$icon-active};
+      }
+    }
+  }
+
+  &.active {
+    @extend .fa-#{$icon-selected};
+  }
+
+  &:not([disabled]) {
+    &:hover, &:focus, &:active {
+      color: darken($color, 10%);
+      .theme-primary &, .theme-warn &, &.checkbox-light {
+        color: darken($color-contrasting, 5%);
+      }
+    }
+  }
+
+  // Any extras.
+  @content;
+}
+
+// Counteract stylific's default button styles.
+button.checkbox, .sf-button.checkbox {
+  padding: 0;
+  &[disabled], &:not([disabled]) {
+    &, &:hover, &:focus, &:active, &.active {
+      &:not(.checkbox-switch) {
+        background: none;
+      }
+      box-shadow: none;
+    }
+  }
+}
+
+.checkbox {
+  // Base styles.
+  display: inline-block;
+  cursor: pointer;
+  @include sf-transitions(all);
+  &[disabled] {
+    cursor: not-allowed;
+  }
+
+  // Circle version.
+  &.checkbox-circle {
+    @include checkbox-icon-styles($color-green, circle-thin, null, check-circle);
+  }
+
+  // Heart version.
+  &.checkbox-heart {
+    @include checkbox-icon-styles($color-red, heart-o, null, heart);
+
+    // Adjust font size to match the circle version.
+    font-size: 0.9em;
+    &.text-size-double, .text-size-double & {
+      font-size: 1.8em;
+    }
+  }
+
+  // Toggle version.
+  &.checkbox-toggle {
+    @include checkbox-icon-styles($color-green, toggle-off, null, toggle-on);
+
+    // Adjust font size to match the circle version.
+    font-size: 1.1em;
+    &.text-size-double, .text-size-double & {
+      font-size: 2.2em;
+    }
+  }
+
+  // Bullseye version.
+  &.checkbox-bullseye {
+    @include checkbox-icon-styles($color-primary, circle-thin, null, bullseye);
+  }
+
+  // Switch version.
+  &.checkbox-switch {
+    /**
+     * Base styles.
+     */
+
+    // Layout.
+    display: inline-block;
+    vertical-align: -0.1em;
+    position: relative;
+    width: 1.7em;
+    height: 1em;
+
+    // Cosmetic.
+    color: $color-green;
+    background-color: $sf-color-background;
+    border: 1px solid;
+    border-radius: 1rem;
+    // box-shadow: inset 0 0 2px 0 rgba(gray, 0.8);
+
+    &::before {
+      // Layout.
+      content: '';
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      position: absolute;
+      @include sf-trbl(0, auto, 0, 0);
+
+      // Cosmetic.
+      background-color: $sf-color-background;
+      border: 1px solid;
+      margin: -1px;
+      border-radius: 1rem;
+      @include sf-transitions(all);
+      box-shadow: 1px 0 2px -1px rgba(gray, 0.6);
+    }
+
+    // Checked styles.
+    &.active {
+      background-color: $color-green;
+      // box-shadow: inset 0 0 2px 0 rgba(gray, 0.6);
+
+      &::before {
+        background-color: $sf-color-background;
+        transform: translateX(0.7em);
+        box-shadow: -1px 0 2px -1px rgba(gray, 0.8);
+      }
+    }
+
+    // Size adjustments.
+    font-size: 0.9em;
+    &.text-size-double, .text-size-double & {
+      font-size: 1.8em;
+      // border: 2px solid;
+      // &::before {
+      //   border: 2px solid;
+      //   margin: -2px;
+      // }
+    }
+  }
+}
+
+/**
+ * Mock checkbox styles.
+ */
+
+@mixin mock-checkbox-icon-styles($color, $icon-base, $icon-selected) {
+  // Icon.
+  @include fa-icon-inline;
+  // vertical-align: initial;
+  @extend .fa-#{$icon-base};
+
+  // Cosmetic.
+  color: $color;
+
+  &:hover, &:focus, &:active {
+    @extend .fa-#{$icon-selected};
+    color: darken($color, 10%);
+    background: none;
+  }
+
+  // Any additional styles.
+  @content;
+}
+
+.mock-checkbox-heart {
+  @include mock-checkbox-icon-styles($color-red, heart-o, heart);
+
+  // Adjust font size to match the circle version.
+  font-size: 0.9em;
+  &.text-size-double, .text-size-double & {
+    font-size: 1.8em;
+  }
+}
+
+.mock-checkbox-circle {
+  @include mock-checkbox-icon-styles($color-green, circle-thin, check-circle);
+}
+
+.mock-checkbox-bullseye {
+  @include mock-checkbox-icon-styles($color-primary, circle-thin, bullseye);
+}

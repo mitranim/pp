@@ -1,0 +1,58 @@
+.fa {
+
+  // Cosmetic.
+  text-align: center;
+  // &::before {
+  //   margin-left: auto;
+  //   margin-right: auto;
+  //   // // IE compat.
+  //   // @include sf-flex-host-center;
+  // }
+
+  &.inline {
+    // vertical-align: -0.1em;
+    &:not(:first-child) {
+      margin-left: 0.3em;
+    }
+    &:not(:last-child) {
+      margin-right: 0.3em;
+    }
+    width: 1em;
+    height: 1em;
+  }
+
+  &.fa-dot::before {
+    content: '•';
+  }
+
+  // Brand colours.
+  &.fa-facebook     {color: $color-facebook}
+  &.fa-github       {color: $color-github-0}
+  &.fa-linkedin     {color: $color-linkedin}
+  &.fa-skype        {color: $color-skype}
+  &.fa-twitter      {color: $color-twitter}
+  &.fa-youtube-play {color: $color-youtube}
+  &.fa-instagram    {color: $color-instagram}
+  &.fa-vk           {color: $color-vk}
+
+  // Sizes.
+  &.size-medium {font-size: 1.5em}
+  &.size-large {font-size: 3em}
+
+  @include sf-transitions(all);
+}
+
+.fa.light {
+  @include sf-icon;
+  @include sf-icon-light;
+}
+
+.fa.dark {
+  @include sf-icon;
+  @include sf-icon-dark;
+}
+
+.fa.pop {
+  @include sf-icon;
+  @include sf-icon-pop;
+}

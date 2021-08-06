@@ -1,0 +1,37 @@
+.sf-navbar {
+  @extend .sticky-top, .--z;
+
+  .navbar-brand-icon {
+    // More narrow than other navbar elements (which have flex: 1).
+    flex: 0.7;
+    font-size: 2em;
+
+    // Cancel sf-icon styles.
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+
+  // Active highlighting.
+  > :hover:not(.sf-dropdown), .active {
+    // @include shadow-inset;
+    @include sf-shadow($shadow-inset, $indicate-focus: true);
+  }
+
+  // Animate box-shadows alongside other properties.
+  > *, a {
+    @include sf-transitions(all);
+    // Workaround for mobile Safari bug: animations cause navbar toggling to
+    // go out of sync with taps.
+    @include sf-eq-sm {transition: none;}
+  }
+
+  // Dropdown corrections.
+  .sf-dropdown {
+    padding: 0;
+  }
+
+  .sf-dropdown-body {
+    text-align: initial;
+  }
+}

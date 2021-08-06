@@ -1,0 +1,44 @@
+.index-featurette {
+
+  // Content layout.
+  .index-featurette-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // a[href] {@include sf-link-decorations;}
+  }
+
+  // Order-dependent styling.
+  &:nth-of-type(2n+1) {
+    .index-featurette-content {
+      > *:first-child {
+        order: 0;
+        margin-right: $sf-space;
+      }
+      > *:last-child  {
+        order: 1;
+        text-align: right;
+      }
+    }
+  }
+  &:nth-of-type(2n+2) {
+    .index-featurette-content {
+      > *:first-child {order: 1}
+      > *:last-child  {
+        order: 0;
+        margin-right: $sf-space;
+      }
+    }
+  }
+
+  &.about {
+    // Typography and dimensions.
+    text-align: center;
+
+    // Icon styles.
+    a {
+      // Bigger size.
+      font-size: 3em;
+    }
+  }
+}
