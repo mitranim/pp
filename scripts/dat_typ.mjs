@@ -134,7 +134,7 @@ function byAuthorId(val, id) {return val.authorId === id}
 
 export class SkillLevel {
   constructor(val) {
-    this.id      = f.opt(val.id,      f.isKey)
+    this.id      = f.req(val.id,      f.isKey)
     this.slug    = f.req(val.slug,    u.isSlug)
     this.title   = f.req(val.title,   f.isStr)
     this.titleEn = f.opt(val.titleEn, f.isStr)
@@ -159,7 +159,7 @@ function callLessons(val) {return val.lessons()}
 
 export class Element {
   constructor(val) {
-    this.id             = f.opt(val.id,           f.isKey)
+    this.id             = f.req(val.id,           f.isKey)
     this.slug           = f.req(val.slug,         u.isSlug)
     this.title          = f.req(val.title,        f.isStr)
     this.titleEn        = f.opt(val.titleEn,      f.isStr)
@@ -185,8 +185,8 @@ function getLessons(val) {return val.lessons}
 
 export class Move {
   constructor(val) {
-    this.id          = f.opt(val.id,          f.isKey)
-    this.title       = f.opt(val.title,       f.isStr)
+    this.id          = f.req(val.id,          f.isKey)
+    this.title       = f.req(val.title,       f.isStr)
     this.titleEn     = f.opt(val.titleEn,     f.isStr)
     this.desc        = f.req(val.desc,        f.isStr)
     this.rating      = f.req(val.rating,      f.isNatPos)

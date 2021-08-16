@@ -40,5 +40,10 @@ export function inlineScript(props, fun) {
 
 export const mainLinkProps = Object.freeze({
   is: `a-a`,
-  dataset: {id: c.MAIN_ID}
+  dataset: {id: c.ID_MAIN}
 })
+
+export function idToHash(val) {
+  val = f.str(val)
+  return f.vac(val && `#${val}`)
+}

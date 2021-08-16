@@ -1,28 +1,14 @@
 @import './node_modules/stylific/scss/_variables';
 
-@mixin sm {
-  @media (max-width: $sf-breakpoint-sm - 1) {
-    @content;
-  }
-}
-
-@mixin gt-sm {
-  @media (min-width: $sf-breakpoint-sm) {
-    @content;
-  }
-}
-
-@mixin gt-md {
-  @media (min-width: $sf-breakpoint-md) {
-    @content;
-  }
-}
+@mixin sm    {@media (max-width: $sf-breakpoint-sm - 1) {@content;}}
+@mixin gt-sm {@media (min-width: $sf-breakpoint-sm)     {@content;}}
+@mixin gt-md {@media (min-width: $sf-breakpoint-md)     {@content;}}
 
 /**
  * Scales the given rule by different percentages depending on display width.
  */
 @mixin media-mix($rule, $value) {
-  @include sm {#{$rule}: $value * 0.6}
+  @include sm    {#{$rule}: $value * 0.6}
   @include gt-sm {#{$rule}: $value * 0.8}
   @include gt-md {#{$rule}: $value}
 }
@@ -32,22 +18,16 @@
  * display width.
  */
 @mixin media-mix-inverse($rule, $value) {
-  @include sm {#{$rule}: $value}
+  @include sm    {#{$rule}: $value}
   @include gt-sm {#{$rule}: $value * 0.8}
   @include gt-md {#{$rule}: $value * 0.6}
 }
 
 @mixin media-prefixed($class-name) {
   .#{$class-name} {@content;}
-  @include sf-eq-sm {
-    .sm-#{$class-name} {@content;}
-  }
-  @include sf-eq-md {
-    .md-#{$class-name} {@content;}
-  }
-  @include sf-gt-md {
-    .lg-#{$class-name} {@content;}
-  }
+  @include sf-eq-sm {.sm-#{$class-name} {@content;}}
+  @include sf-eq-md {.md-#{$class-name} {@content;}}
+  @include sf-gt-md {.lg-#{$class-name} {@content;}}
 }
 
 // Group of typical rules for a cover background image.

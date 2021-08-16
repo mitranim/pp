@@ -6,6 +6,7 @@ import * as u from './util.mjs'
 import * as d from './dat.mjs'
 import * as e from './elem.mjs'
 import * as sm from './site_misc.mjs'
+import * as sv from './site_svg.mjs'
 
 export class Site extends d.Dat {
   constructor(val) {
@@ -440,7 +441,7 @@ export class PageVideo extends d.Video {
 function VideoSubnav(page, site) {
   return e.div(
     {
-      id: c.MAIN_ID,
+      id: c.ID_MAIN,
       class: `sf-navbar sf-navbar-tabs`,
     },
     VideoSubnavLink({
@@ -677,28 +678,34 @@ export class PageLesson extends d.Lesson {
 
 function LessonNavbar(page, site) {
   return e.div(
-    {id: c.MAIN_ID, class: `sf-navbar sf-navbar-tabs`},
+    {id: c.ID_MAIN, class: `sf-navbar sf-navbar-tabs`},
     f.map(site.skillLevels, val => LessonNavbarSkillLevel(val, page))
   )
 }
 
 function LessonNavbarSkillLevel(skillLevel, les) {
+  const icon = skillLevelIcons[skillLevel.level]
+
   return e.a(
     {
       href: skillLevel.firstLesson()?.link,
       class: u.act(les.move.element.skillLevel === skillLevel),
       ...u.mainLinkProps,
     },
-    e.span({class: skillLevelIcons[skillLevel.level]}),
+    // e.span({class: skillLevelIcons[skillLevel.level]}),
+    icon && e.span({class: `sf-icon`}, icon),
     e.spanv(skillLevel.title),
   )
 }
 
 const skillLevelIcons = [
   undefined,
-  'sf-icon-skill-level-basic',
-  'sf-icon-skill-level-advanced',
-  'sf-icon-skill-level-masterful',
+  sv.SvgSkillLevelBasic,
+  sv.SvgSkillLevelAdvanced,
+  sv.SvgSkillLevelMasterful,
+  // 'sf-icon-skill-level-basic',
+  // 'sf-icon-skill-level-advanced',
+  // 'sf-icon-skill-level-masterful',
 ]
 
 function LessonMain(les, site) {
@@ -932,7 +939,7 @@ export class PageSupport extends Page {
         sub: e.pv(`Благодарим за вклад в развитие проекта!`),
       }),
       e.div(
-        {id: c.MAIN_ID, class: `row-center-center pad`},
+        {id: c.ID_MAIN, class: `row-center-center pad`},
         e.iframe({
           src: `https://money.yandex.ru/quickpay/shop-widget?writer=seller&targets=%D0%9F%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%BA%D0%B0%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0%20ProstoPoi.ru&targets-hint=&default-sum=100&button-text=11&payment-type-choice=on&hint=&successURL=&quickpay=shop&account=41001128987294`,
           width: `423`,

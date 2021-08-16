@@ -29,13 +29,15 @@
    */
 
   // Brand icon.
-  @include svg-custom(prosto-poi-icon);
+  // @include svg-custom(prosto-poi-icon);
   // @include svg-custom(prosto-poi-icon-white);
   // @include svg-custom(poister);
   // @include svg-custom(poister-white);
-  @include svg-custom(skill-level-basic);
-  @include svg-custom(skill-level-advanced);
-  @include svg-custom(skill-level-masterful);
+  // @include svg-custom(skill-level-basic);
+  // @include svg-custom(skill-level-advanced);
+  // @include svg-custom(skill-level-masterful);
+
+  // Must have a flag for every `Lang`.
   @include svg-custom(flag-ru);
   @include svg-custom(flag-en);
   @include svg-custom(flag-jp);

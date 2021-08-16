@@ -11,4 +11,5 @@ export const TEMPLATES = 'templates'
 export const SRV_OPTS = {port: PORT, hostname: 'localhost'}
 export const AFR_OPTS = {port: 47692}
 
-export const MAIN_ID = `main`
+export const ID_MAIN = `main`
+export const ID_TOP = `top`

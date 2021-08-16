@@ -25,7 +25,8 @@ export function Html({page, site}, ...children) {
         f.vac(!c.PROD) && e.script({type: `module`, src: a.clientPath(c.AFR_OPTS)}),
         f.vac(c.PROD) && e.link({href: `https://fonts.googleapis.com/css?family=Open+Sans:400,600,400italic,600italic&subset=latin,cyrillic`, rel: `stylesheet`, type: `text/css`}),
       ),
-      e.bodyv(
+      e.body(
+        {id: c.ID_TOP},
         Header(page, site),
         children,
         Footer(page, site),
@@ -58,9 +59,10 @@ function Footer() {
         e.spanv(`2014-${new Date().getFullYear()} © `),
         e.a({href: `/about`}, `ProstoPoi`),
       ),
-      e.button({
-        class: `fa fa-arrow-up pad theme-text-primary`,
-        onclick: `window.scrollTo(0, 0); event.preventDefault()`,
+      e.a({
+        href: u.idToHash(c.ID_TOP),
+        class: `fa fa-arrow-up pad theme-text-primary sf-button`,
+        onclick: `event.preventDefault(); window.scrollTo(0, 0)`,
         'aria-label': `scroll up`,
       })
     ),
