@@ -2,7 +2,7 @@ MAKEFLAGS := --silent --always-make
 PAR := $(MAKE) -j 128
 TAR := public
 SASS := sass --no-source-map -q -I . styles/main.scss:$(TAR)/styles/main.css
-WATCH := watchexec -r -p -c -d=0 -n
+WATCH := watchexec -r -c -d=0 -n
 DENO := deno run -A --unstable --no-check --import-map=importmap.json
 
 ifeq ($(PROD), true)
@@ -51,7 +51,7 @@ afr:
 	deno run -A --unstable --no-check https://deno.land/x/afr@0.5.1/afr.ts --port 47692
 
 srv-w:
-	$(DENO) --watch scripts/cmd_srv.mjs
+	$(WATCH) -w=templates/articles -- $(DENO) --watch scripts/cmd_srv.mjs
 
 srv:
 	$(DENO) scripts/cmd_srv.mjs
