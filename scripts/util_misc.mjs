@@ -164,6 +164,7 @@ export function tis(a, b) {return f.truthy((a || b) && f.is(a, b))}
 
 export function toJson(val) {return JSON.stringify(val, null, 2)}
 
+// TODO replace with Deno stdlib `fs.walkSync`.
 export function* walk(path) {
   for (const entry of Deno.readDirSync(path)) {
     entry.name = pt.join(path, entry.name)
@@ -171,6 +172,7 @@ export function* walk(path) {
   }
 }
 
+// TODO replace with Deno stdlib `fs.walkSync`.
 export function* walkFiles(path) {
   for (const entry of Deno.readDirSync(path)) {
     entry.name = pt.join(path, entry.name)

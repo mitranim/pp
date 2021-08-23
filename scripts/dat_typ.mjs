@@ -16,10 +16,12 @@ export class Dat {
     this.langs       = Lang.enum()
   }
 
+  *vals() {
+    for (const key in this) yield* this[key]
+  }
+
   rel() {
-    for (const key in this) {
-      for (const val of this[key]) val.rel?.(this)
-    }
+    for (const val of this.vals()) val.rel?.(this)
     return this
   }
 }
@@ -37,10 +39,6 @@ export class Article {
     this.isDraft          = f.opt(val.isDraft,          f.isBool)
     this.image            = f.opt(val.image, f.isStr) && u.ensureLeadingSlash(val.image)
     this.createdAt        = j.toInstOpt(val.createdAt, Date)
-
-    // TODO: don't forget to unfuck this when converting to files.
-    this.content = this.content.replaceAll(`/static/images/`, `/images/`)
-    this.content = this.content.replaceAll(`\r\n`, `\n`)
   }
 
   rel(dat) {
