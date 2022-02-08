@@ -37,3 +37,7 @@ Complete build:
 * Restore auth and profile features (use Firebase).
 * Remove unused styles.
 * Image optimization.
+
+## Licensing
+
+Ideally I would like to license just the code under https://unlicense.org without licensing the other content such as texts, articles, images. But I'm unsure how to do it without bloating the repo with legal comments. If someone wants to use parts of this work, please [contact me](https://mitranim.com#contacts) and we'll work it out.
