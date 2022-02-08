@@ -30,18 +30,18 @@ else
 endif
 
 watch: clean
-	$(PAR) styles-w scripts-w afr srv-w
+	$(PAR) styles_w scripts_w afr srv_w
 
 build: clean
 	$(PAR) styles scripts pages cp
 
-styles-w:
+styles_w:
 	$(SASS) --watch
 
 styles:
 	$(SASS)
 
-scripts-w:
+scripts_w:
 	node esbuild.mjs --watch
 
 scripts:
@@ -50,13 +50,13 @@ scripts:
 afr:
 	deno run -A --unstable --no-check https://deno.land/x/afr@0.5.1/afr.ts --port 47692
 
-srv-w:
+srv_w:
 	$(WATCH) -w=templates/articles -- $(DENO) --watch scripts/cmd_srv.mjs
 
 srv:
 	$(DENO) scripts/cmd_srv.mjs
 
-pages-w:
+pages_w:
 	$(DENO) --watch scripts/cmd_pages.mjs
 
 pages:
