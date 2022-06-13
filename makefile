@@ -13,7 +13,7 @@ WATCH := watchexec -r -c -d=0 -n
 DENO_RUN := deno run -A --no-check $(IMPORTMAP_DENO_FLAG)
 DENO_WAT := $(DENO_RUN) --watch
 ESBUILD := https://deno.land/x/esbuild@v0.14.42/mod.js
-ESBUILD_OPT := --bundle --format=esm --target=es2019 --minify=true --keep-names=true --legal-comments=none
+ESBUILD_OPT := --bundle --format=esm --target=es2019 --minify=true --legal-comments=none
 
 ifeq ($(PROD), true)
 	SASS := $(SASS) --style=compressed

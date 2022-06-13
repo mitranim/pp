@@ -47,18 +47,26 @@ export const A = new class PropBui extends p.PropBui {
   hrefMain() {return this.href(a.url(this.get(`href`)).setHash(c.ID_MAIN))}
 }().frozen()
 
+const urlYoutubeLink = Object.freeze(a.url(`https://www.youtube.com/watch`))
+const urlYoutubeImage = Object.freeze(a.url(`https://img.youtube.com/vi`))
 const urlYoutubeEmbed = Object.freeze(a.url(`https://www.youtube.com/embed`))
 
-export function youtubeEmbedUrl(id) {
-  if (!id) return undefined
-  return urlYoutubeEmbed.clone().addPath(id)
-}
+export class YoutubeId extends String {
+  constructor(src) {super(a.reqPk(src))}
 
-const urlYoutubeImage = Object.freeze(a.url(`https://img.youtube.com/vi`))
+  link() {
+    const url = urlYoutubeLink.clone()
+    url.query.set(`v`, this)
+    return url
+  }
 
-export function youtubeImageUrl(id) {
-  if (!id) return undefined
-  return urlYoutubeImage.clone().addPath(id, `0.jpg`)
+  image() {return urlYoutubeImage.clone().addPath(this, `0.jpg`)}
+
+  embed() {
+    const url = urlYoutubeEmbed.clone().addPath(this)
+    url.query.set(`rel`, `0`).set(`modestbranding`, `1`)
+    return url
+  }
 }
 
 export function isSlug(val) {return a.isStr(val) && /^[a-z0-9_-]+$/.test(val)}

@@ -11,16 +11,20 @@ dr.Reg.main.setDefiner(dg.customElements)
 
 export const ren = new p.Ren(dg.document).patchProto(dg.glob.Element)
 
+const E = ren.E
+const A = p.PropBui.main
+
 export function MixElem(cls) {return p.MixChild(d.MixNode(cls))}
 
 export class Carousel extends MixElem(dg.glob.HTMLElement) {
+  static customName = `a-carousel`
   static {dr.reg(this)}
 
   init(...items) {
     for (const item of items) initCarouselItem(item)
     const len = items.length
 
-    return this.props({class: `carousel`}).chi(
+    return this.props(A.cls(`carousel`)).chi(
       items,
       new CarouselDots().init(len),
       new CarouselPrev().init(len),
@@ -68,11 +72,12 @@ function initCarouselItem(val) {
 function isCarouselItem(val) {return val.hasAttribute(`data-carousel-item`)}
 
 class CarouselDots extends MixElem(dg.glob.HTMLElement) {
+  static customName = `carousel-dots`
   static {dr.reg(this)}
 
   init(len) {
     return this
-      .props({class: `carousel-dots`})
+      .props(A.cls(`carousel-dots`))
       .chi(i.times(len, makeCarouselDot))
   }
 
@@ -95,6 +100,7 @@ class CarouselDots extends MixElem(dg.glob.HTMLElement) {
 function isCurrent(val) {return val.isCurrent()}
 
 class CarouselBtn extends MixElem(dg.glob.HTMLButtonElement) {
+  static customName = `carousel-btn`
   static {dr.reg(this)}
   caro() {return this.anc(Carousel)}
   init() {return this.props(this.A)}
@@ -104,9 +110,10 @@ class CarouselBtn extends MixElem(dg.glob.HTMLButtonElement) {
 function makeCarouselDot() {return new CarouselDot().init()}
 
 class CarouselDot extends CarouselBtn {
+  static customName = `carousel-dot`
   static {dr.reg(this)}
 
-  get A() {return {class: `carousel-dot`}}
+  get A() {return A.cls(`carousel-dot`)}
 
   ind() {return i.indexOf(this.anc(CarouselDots).childNodes, this)}
 
@@ -121,9 +128,10 @@ class CarouselDot extends CarouselBtn {
 }
 
 class CarouselPrev extends CarouselBtn {
+  static customName = `carousel-prev`
   static {dr.reg(this)}
 
-  get A() {return {class: `carousel-control carousel-prev`}}
+  get A() {return A.cls(`carousel-control carousel-prev`)}
 
   onClick(eve) {
     d.eventStop(eve)
@@ -132,9 +140,10 @@ class CarouselPrev extends CarouselBtn {
 }
 
 class CarouselNext extends CarouselBtn {
+  static customName = `carousel-next`
   static {dr.reg(this)}
 
-  get A() {return {class: `carousel-control carousel-next`}}
+  get A() {return A.cls(`carousel-control carousel-next`)}
 
   onClick(eve) {
     d.eventStop(eve)
@@ -142,18 +151,45 @@ class CarouselNext extends CarouselBtn {
   }
 }
 
+export class Yt extends MixElem(dg.glob.HTMLAnchorElement) {
+  static customName = `a-yt`
+  static {dr.reg(this)}
+
+  init(src, link) {
+    const img = l.render(src.image())
+    this.dataset.embed = l.render(src.embed())
+
+    return this.props(
+      A
+      .href(link)
+      .cls(`sf-embed preview`)
+      .style(img ? {backgroundImage: `url(${img})`} : undefined)
+    )
+  }
+
+  connectedCallback() {this.onclick = this.onClick}
+
+  onClick(eve) {
+    if (d.isEventModified(eve)) return
+    d.eventStop(eve)
+
+    this.chi(E.iframe.props(
+      A.src(this.dataset.embed).set(`allowFullScreen`, `true`)
+    ))
+  }
+}
+
 function clearHash() {
   const loc = window.location
-  const his = window.history
-
   const hash = loc.hash
   if (!hash) return
 
   const node = document.querySelector(hash)
-  if (node) {
-    node.scrollIntoView()
-    his.replaceState(his.state, ``, loc.origin + loc.pathname + loc.search)
-  }
+  if (!node) return
+
+  const his = window.history
+  node.scrollIntoView()
+  his.replaceState(his.state, ``, loc.origin + loc.pathname + loc.search)
 }
 
 if (d.DOM_EXISTS) clearHash()

@@ -116,11 +116,12 @@ export function SiteSource() {
   )
 }
 
-export function VideoEmbed(embed, image) {
+// Input may be `YoutubeId` or another type satisfying the interface.
+export function VideoEmbed(src) {
   if (c.DEV_DISABLE_VIDEOS) {
-    return E.div.props(A.cls(`sf-embed preview`).bgImg(image))
+    return E.div.props(A.cls(`sf-embed preview`).bgImg(src.image()))
   }
-  return E.div.props(A.cls(`sf-embed`)).chi(VideoIframe(embed))
+  return E.div.props(A.cls(`sf-embed`)).chi(VideoIframe(src.embed()))
 }
 
 function VideoIframe(src) {

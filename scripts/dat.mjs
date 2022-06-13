@@ -91,14 +91,12 @@ export class Video extends Model {
     this.slug = u.reqSlug(val.slug)
     this.title = a.reqStr(val.title)
     this.titleEn = a.optStr(val.titleEn)
-    this.youtubeId = a.reqStr(val.youtubeId)
+    this.youtubeId = a.toInst(val.youtubeId, u.YoutubeId)
     this.createdAt = a.toInstOpt(val.createdAt, a.DateTime)
   }
 
   titleInverted() {return this.titleEn}
   urlPath() {return a.url().setPath(`/videos`, this.slug).href}
-  image() {return u.youtubeImageUrl(this.youtubeId)}
-  embed() {return u.youtubeEmbedUrl(this.youtubeId)}
 }
 
 class Videos extends Models {get cls() {return Video}}
@@ -123,7 +121,7 @@ export class Lesson extends Model {
     this.authorId = a.optPk(val.authorId)
     this.authorName = a.reqStr(val.authorName)
     this.authorYoutubeChannelUrl = a.optStr(val.authorYoutubeChannelUrl)
-    this.youtubeId = a.reqStr(val.youtubeId)
+    this.youtubeId = a.toInst(val.youtubeId, u.YoutubeId)
     this.title = a.reqStr(val.title)
     this.titleEn = a.reqStr(val.titleEn)
     this.language = a.reqStr(val.language)
@@ -132,8 +130,6 @@ export class Lesson extends Model {
 
   urlPath() {return a.url().setPath(`/lessons`, this.id).href}
   titleInverted() {return this.titleEn}
-  image() {return u.youtubeImageUrl(this.youtubeId)}
-  embed() {return u.youtubeEmbedUrl(this.youtubeId)}
   move() {return this.dat().moves.get(this.moveId)}
   moves() {return this.move().element().moves()}
   author() {return this.dat().authors.getOpt(this.authorId)}

@@ -238,24 +238,21 @@ function IndexFeaturettes(site) {
   return E.div.props(A.cls(`pad`)).chi(
     IndexFeaturette({
       link: `/articles`,
-      image: u.youtubeImageUrl(`JusDCjOxfGM`),
-      embed: u.youtubeEmbedUrl(`JusDCjOxfGM`),
-      text:  `Вдохновляйтесь!`,
-      sub:   `Крутить пои могут все и всегда.`,
+      text: `Вдохновляйтесь!`,
+      sub: `Крутить пои могут все и всегда.`,
+      src: new u.YoutubeId(`JusDCjOxfGM`),
     }),
     a.vac(video) && IndexFeaturette({
-      link:  video.urlPath(),
-      image: video.ent.image(),
-      embed: video.ent.embed(),
+      link: video.urlPath(),
       text: `Смотрите!`,
-      sub:  `Впечатляющие выступления артистов.`,
+      sub: `Впечатляющие выступления артистов.`,
+      src: video.ent.youtubeId,
     }),
     a.vac(les) && IndexFeaturette({
-      link:  les.urlPath(),
-      image: les.ent.image(),
-      embed: les.ent.embed(),
+      link: les.urlPath(),
       text: `Тренируйтесь!`,
-      sub:  `Больше элементов — больше свободы.`,
+      sub: `Больше элементов — больше свободы.`,
+      src: les.ent.youtubeId,
     }),
     E.hr,
     sm.SocialLinks(),
@@ -263,13 +260,13 @@ function IndexFeaturettes(site) {
   )
 }
 
-function IndexFeaturette({link, image, embed, text, sub}) {
+function IndexFeaturette({link, text, sub, src}) {
   return E.div.props(A.cls(`index-featurette`)).chi(
     E.hr,
     E.div.props(A.cls(`index-featurette-content`)).chi(
-      E.div.props(A.cls(`flex-7`)).chi(sm.VideoEmbed(embed, image)),
+      E.div.props(A.cls(`flex-7`)).chi(new cl.Yt().init(src, link)),
       E.div.props(A.cls(`flex-5 self-center container`)).chi(
-        E.h2.chi(E.a.props(A.href(link).hrefMain()).chi(text)),
+        E.h2.chi(E.a.props(A.href(link).cls(`decorated`).hrefMain()).chi(text)),
         a.vac(sub) && E.h3.chi(sub),
       )
     ),
@@ -514,7 +511,7 @@ function VideoSidenavItem(video, current) {
       E.div.props(
         A
         .cls(`flex-1 background-cover`)
-        .bgImg(video.image())
+        .bgImg(video.youtubeId.image())
         .set(`data-overtip`, video.title)
       )
     )
@@ -525,7 +522,7 @@ function VideoMain(page) {
 
   return E.div.props(A.cls(`flex-4`)).chi(
     E.div.props(A.cls(`space-out`)).chi(
-      sm.VideoEmbed(ent.embed(), ent.image()),
+      sm.VideoEmbed(ent.youtubeId),
 
       // Video title and favorite toggle.
       E.h2
@@ -571,7 +568,7 @@ function VideoFeedItem(page, current) {
       A.href(page.urlPath()).hrefMain().cls(`grid-item`).cur(current)
     )
     .chi(
-      E.div.props(A.cls(`preview`).bgImg(ent.image())).chi(
+      E.div.props(A.cls(`preview`).bgImg(ent.youtubeId.image())).chi(
         E.p.chi(sm.TitleWithTooltip(ent)),
       ),
     )
@@ -645,7 +642,7 @@ function TechVideoView(page) {
   const ent = a.reqInst(page.ent, d.TechVideo)
 
   return E.div.props(A.cls(`space-out`)).chi(
-    sm.VideoEmbed(ent.embed(), ent.image()),
+    sm.VideoEmbed(ent.youtubeId),
     TechVideoTitle(ent),
     TechVideoViewAuthor(ent.author()),
   )
@@ -797,7 +794,7 @@ function LessonActualContent(page) {
   const ent = a.reqInst(page.ent, d.Lesson)
 
   return E.div.props(A.cls(`space-out`)).chi(
-    sm.VideoEmbed(ent.embed(), ent.image()),
+    sm.VideoEmbed(ent.youtubeId),
     MoveDetails(ent.move()),
     LessonDetails(page),
   )
@@ -900,7 +897,7 @@ function MoveLesson(les, current) {
       A.href(les.urlPath()).cls(`grid-item`).hrefMain().current(current).style(`position: relative`)
     )
     .chi(
-      E.div.props(A.cls(`preview`).bgImg(les.image())),
+      E.div.props(A.cls(`preview`).bgImg(les.youtubeId.image())),
       E.p.chi(
         a.vac(les.language) && (
           E.span.props(A.cls(a.san`sf-icon-flag-${les.language} size-4-to-3 inline`))
