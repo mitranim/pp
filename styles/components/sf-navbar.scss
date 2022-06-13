@@ -13,7 +13,7 @@
   }
 
   // Active highlighting.
-  > :hover:not(.sf-dropdown), .active {
+  > :hover:not(.sf-dropdown), [aria-current] {
     // @include shadow-inset;
     @include sf-shadow($shadow-inset, $indicate-focus: true);
   }

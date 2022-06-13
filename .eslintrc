@@ -1,11 +1,12 @@
 {
-  "parserOptions": {"sourceType": "module"},
-  "env": {
-    "es2021": true,
-    "browser": true,
-  },
+  "parserOptions": {"ecmaVersion": "latest", "sourceType": "module"},
+  "env": {"es2020": true},
   "globals": {
-    "Deno": true,
+    "Deno": "readonly",
+    "console": "readonly",
+    "URL": "readonly",
+    "fetch": "readonly",
+    "Response": "readonly",
   },
   "rules": {
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_.", "varsIgnorePattern": "^_."}],

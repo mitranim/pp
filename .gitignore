@@ -4,7 +4,8 @@
 !/*rc
 !/*.md
 !/makefile
-!/importmap.json
+!/importmap_deno.json
+!/importmap_client.json
 !/package.json
 !/esbuild.mjs
 

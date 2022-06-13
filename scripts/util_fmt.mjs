@@ -1,15 +1,11 @@
-import * as f from 'fpx'
+/*
+Prints JS data structures as JS code.
+TODO move to `@mitranim/js`.
+*/
 
-// TODO publish separately.
+import * as a from '@mitranim/js/all.mjs'
 
 const INDENT = `  `
-
-function indent(ind) {
-  f.req(ind, f.isNat)
-  let out = ``
-  while (ind--) out += INDENT
-  return out
-}
 
 export class FmtRaw extends String {}
 
@@ -18,14 +14,14 @@ export function fmtInd(val, ind = 0) {
 }
 
 export function fmt(val, ind = 0) {
-  if (f.isStr(val)) return fmtStr(val)
-  if (f.isSym(val)) return fmtSym(val)
-  if (f.isPrim(val)) return String(val)
-  if (f.isDate(val)) return `new Date(${fmt(val.toISOString())})`
-  if (f.isInst(val, FmtRaw)) return val.toString()
-  if (f.isList(val)) return fmtList(val, ind)
-  if (f.isStruct(val)) return fmtStruct(val, ind)
-  throw Error(`can't print as code: ${f.show(val)}`)
+  if (a.isStr(val)) return fmtStr(val)
+  if (a.isSym(val)) return fmtSym(val)
+  if (a.isPrim(val)) return String(val)
+  if (a.isDate(val)) return `new Date(${fmt(val.toISOString())})`
+  if (a.isInst(val, FmtRaw)) return val.toString()
+  if (a.isList(val)) return fmtList(val, ind)
+  if (a.isStruct(val)) return fmtStruct(val, ind)
+  throw Error(`unable to format as code: ${a.show(val)}`)
 }
 
 function fmtSym(val) {
@@ -35,17 +31,12 @@ function fmtSym(val) {
   return `Symbol(${fmt(val.description)})`
 }
 
-// Placeholder.
-function fmtStr(val) {
-  return '`' + val + '`'
-}
+// Placeholder. Lacks escapes.
+function fmtStr(val) {return '`' + val + '`'}
 
 // Placeholder.
 function fmtList(val, ind) {
-  const inner = fmtJoin(
-    f.map(val, f.cwk, fmt, ind+1),
-    ind,
-  )
+  const inner = fmtJoin(a.map(val, val => fmt(val, ind + 1)), ind)
 
   if (val.constructor === Array) return `[${inner}]`
   return `new ${val.constructor.name}(${inner})`
@@ -53,11 +44,7 @@ function fmtList(val, ind) {
 
 // Placeholder.
 function fmtStruct(val, ind) {
-  const inner = fmtJoin(
-    f.map(f.entries(val), f.cwk, fmtEntry, ind+1),
-    ind,
-  )
-
+  const inner = fmtJoin(a.map(a.entries(val), val => fmtEntry(val, ind+1)), ind)
   const lit = `{${inner}}`
 
   if (val.constructor === Object) return lit
@@ -70,8 +57,8 @@ function fmtEntry([key, val], ind) {
 
 // Placeholder.
 function fmtKey(val) {
-  if (f.isSym(val)) return fmtSym(val)
-  f.req(val, f.isStr)
+  if (a.isSym(val)) return fmtSym(val)
+  a.reqStr(val)
   if (/^[A-Za-z$_][\w$]*$/.test(val)) return String(val)
   return `'${val}'`
 }
@@ -82,9 +69,9 @@ function fmtJoin(vals, ind) {
 }
 
 function strJoin(list, prefix, suffix) {
-  return f.fold(list, ``, strAddEnclosed, prefix, suffix)
+  return a.fold(list, ``, function add(acc, val) {
+    return a.laxStr(acc) + a.laxStr(prefix) + a.laxStr(val) + a.laxStr(suffix)
+  })
 }
 
-function strAddEnclosed(acc, val, _key, prefix, suffix) {
-  return f.str(acc) + f.str(prefix) + f.str(val) + f.str(suffix)
-}
+function indent(ind) {return INDENT.repeat(a.reqNat(ind))}

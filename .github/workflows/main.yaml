@@ -16,7 +16,7 @@ jobs:
 
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: "1.12.0"
+          deno-version: "1.22.0"
 
       - run: npm i
       - run: npm i -g sass@1.37.5

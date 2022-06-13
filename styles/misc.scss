@@ -18,7 +18,7 @@
 }
 
 .nobg:not(:root) {
-  &, &:hover, &:active, &:focus, &.active {
+  &, &:hover, &:active, &:focus, &.active, &[aria-current] {
     &[disabled], &:not([disabled]) {
       background-color: transparent;
     }
@@ -44,7 +44,7 @@
   display: block;
   @extend .container;
   // Active style.
-  &.active {
+  &[aria-current] {
     // @include image-backdrop;
     // color: $sf-color-background;
     @extend .shadow-narrow;
@@ -279,7 +279,7 @@
   }
 }
 
-.sf-tabset > .sf-tabset-head > .sf-tab-head.active {
+.sf-tabset > .sf-tabset-head > .sf-tab-head[aria-current] {
   @include shadow-inset;
 }
 .sf-tabset > .sf-tabset-body > .sf-tab-body {padding: 0}
@@ -366,4 +366,12 @@ article, .sf-article {
   @include sticky;
   top: 0;
   &.--z {z-index: 1;}
+}
+
+/*
+Adapted from `sf-register-interactive-selector`, which doesn't know about
+[aria-current] and by default applies this to `[href].active`.
+*/
+[href][aria-current] {
+  background-color: rgba(map-get($sf-color-map-primary, default), 0.1);
 }

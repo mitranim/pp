@@ -6,11 +6,14 @@
   }
 }
 
-[data-carousel] {
+.carousel {
+  display: block;
   position: relative;
 }
 
-[data-carousel-dots] {
+.carousel-item {@extend .sf-jumbo;}
+
+.carousel-dots {
   display: block;
   position: absolute;
   @include sf-trbl($sf-space * 2, $sf-space * 2, auto, auto);
@@ -25,28 +28,28 @@
   padding: 0;
 
   // Cosmetic.
+  @extend .sf-button-flat;
   @include fa-icon;
   cursor: pointer;
   font-size: 2em;
   color: white;
   opacity: 0.25;
   &::before {content: $fa-var-circle-o}
-  &:hover, &.active {
+  &:hover, &[aria-current=step] {
     opacity: 1;
     &::before {content: $fa-var-circle}
   }
   @include no-bg;
 }
 
-button.carousel-dot {@extend .sf-button-flat;}
-
-[data-carousel-prev], [data-carousel-next] {
+.carousel-control {
   // Layout.
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
 
   // Cosmetic.
+  @extend .sf-button-flat;
   @include fa-icon;
   color: white;
   font-size: 4em;
@@ -55,14 +58,12 @@ button.carousel-dot {@extend .sf-button-flat;}
   @include no-bg;
 }
 
-button[data-carousel-prev], button[data-carousel-next] {@extend .sf-button-flat;}
-
-[data-carousel-prev] {
+.carousel-prev {
   left: $sf-space;
   &::before {content: $fa-var-chevron-circle-left}
 }
 
-[data-carousel-next] {
+.carousel-next {
   right: $sf-space;
   &::before {content: $fa-var-chevron-circle-right}
 }

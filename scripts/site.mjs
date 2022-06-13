@@ -1,141 +1,194 @@
-import * as f from 'fpx'
-import * as x from 'prax'
-import * as es from 'espo'
+import * as a from '@mitranim/js/all.mjs'
+import * as p from '@mitranim/js/prax.mjs'
+import {paths as pt} from '@mitranim/js/io_deno.mjs'
 import * as c from './conf.mjs'
 import * as u from './util.mjs'
+import {E, A} from './util.mjs'
 import * as d from './dat.mjs'
-import * as e from './elem.mjs'
 import * as sm from './site_misc.mjs'
-import * as sv from './site_svg.mjs'
+import * as cl from './client.mjs'
 
-export class Site extends d.Dat {
-  constructor(val) {
-    super(val)
+export class Site extends a.Emp {
+  constructor(dat) {
+    super()
+    this.dat = a.reqInst(dat, d.Dat)
+    this.all = new Pages()
+    this.notFound = new Page404(this)
 
-    this.misc = new u.List(
-      new Page404(),
-      new PageIndex(),
-      new PageArticles(),
-      new PageVideos(),
-      new PageSupport(),
-      new PageAbout(),
-    )
+    this.all.add([
+      this.notFound,
+      new PageIndex(this),
+      new PageArticles(this),
+      new PageVideos(this),
+      new PageSupport(this),
+      new PageAbout(this),
+    ])
+    this.all.add(this.articles = this.toPages(this.dat.articles, PageArticle))
+    this.all.add(this.videos = this.toPages(this.dat.videos, PageVideo))
+    this.all.add(this.techVideos = this.toPages(this.dat.techVideos, PageTechVideo))
+    this.all.add(this.lessons = this.toPages(this.dat.lessons, PageLesson))
   }
 
-  *pages() {
-    yield* this.misc
-    yield* this.articles
-    yield* this.videos
-    yield* this.techVideos
-    yield* this.lessons
+  pageByPath(key) {return this.all.get(key)}
+  pages() {return this.all.values()}
+  toPages(src, cls) {return a.map(src, val => new cls(this, val))}
+}
+
+class Page extends a.Emp {
+  // "ent" is short for "entity".
+  constructor(site, ent) {
+    super()
+    a.priv(this, `site`, a.reqInst(site, Site))
+    this.ent = a.optInst(ent, d.Model)
   }
 
-  pageByLink(link) {
-    for (const val of this.pages()) if (val.link === link) return val
-    return undefined
+  get title() {return ``}
+
+  pk() {return a.pk(this.ent)}
+
+  urlPath() {}
+
+  fsPath() {
+    const path = a.laxStr(this.urlPath())
+    return path && a.stripPre(path, `/`) + `.html`
+  }
+
+  targetPath() {
+    const path = a.laxStr(this.fsPath())
+    return path && pt.join(c.TARGET, path)
+  }
+
+  res() {return a.resBui().html(this.body()).res()}
+  body() {return this.html()}
+  html(...chi) {return sm.Html(this, ...chi)}
+
+  write() {
+    const path = this.targetPath()
+    if (!path) return
+
+    const body = this.body()
+    if (!body) return
+
+    globalThis.Deno.mkdirSync(pt.dir(path), {recursive: true})
+    globalThis.Deno.writeTextFileSync(path, body)
   }
 }
 
-class Page {
-  constructor(val) {f.assign(this, val)}
-  get path() {return f.vac(this.link && f.str(this.link) + `.html`)}
-  set path(path) {es.pubs(this, {path})}
-  res() {throw Error(`implement in subclass`)}
+// Similar to `a.Coll` but uses `.urlPath()` and prevents redundancies.
+class Pages extends Map {
+  add(src) {
+    for (const page of src) {
+      const key = a.reqInst(page, Page).urlPath()
+
+      if (!a.optPk(key)) continue
+
+      if (this.has(key)) {
+        throw Error(`redundant page ${a.show(page)} on path ${a.show(key)}`)
+      }
+
+      this.set(key, page)
+    }
+
+    return this
+  }
 }
 
 export class PageErr extends Page {
-  get title() {return `Ошибка 500`}
+  constructor(site, err) {super(site).err = err}
+  res() {return a.resBui().html(this.body()).code(this.code()).res()}
+  code() {return 500}
+  get title() {return `Внутренняя ошибка`}
 
-  res(site) {
+  body() {
     const err = this.err || Error(this.title)
 
-    return u.resHtml(sm.Html(
-      {page: this, site},
+    return this.html(
       sm.Jumbo({
         img: `/images/eruption.jpg`,
         title: this.title,
-        sub: e.pv(`Произошла внутренняя ошибка сайта. Приносим извинения.`),
+        sub: E.p.chi(`Произошла внутренняя ошибка сайта. Приносим извинения.`),
       }),
-      e.pre({class: `pad`}, err?.stack || String(err)),
-    ), {status: 500})
+      E.pre.props(A.cls(`pad`)).chi(err?.stack || err),
+    )
   }
 }
 
-export class Page404 extends Page {
-  get path() {return `404.html`}
+export class Page404 extends PageErr {
   get title() {return `Ошибка 404: страница не найдена`}
+  fsPath() {return `404.html`}
+  code() {return 404}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
         title: this.title,
-        sub: e.pv(`Приносим извинения, страница не найдена.`),
+        sub: E.p.chi(`Приносим извинения, страница не найдена.`),
       }),
-    ), {status: 404})
+    )
   }
 }
 
 export class PageIndex extends Page {
-  get link() {return `/`}
-  get path() {return `index.html`}
   get title() {return `ProstoPoi`}
+  urlPath() {return `/`}
+  fsPath() {return `index.html`}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
-      IndexCarousel(site),
+  body() {
+    return this.html(
+      IndexCarousel(this.site),
       IndexSupport(),
-      IndexHighlights(site),
+      IndexHighlights(this.site),
       IndexQuote(),
-      IndexFeaturettes(site),
-    ))
+      IndexFeaturettes(this.site),
+    )
   }
 }
 
 function IndexCarousel(site) {
-  const les = site.lessons[0]
+  const les = a.head(site.lessons)
 
-  return sm.Carousel(
-    sm.Jumbo({
-      img: `/images/colourful-balls.jpg`,
-      sub: e.div({class: `brand-logo`}, e.div({class: `brand-logo-background`})),
-    }),
-    IndexCarouselItem(`/articles`, `/images/spinning-red.jpg`,     `Что крутить`),
-    IndexCarouselItem(`/videos`,   `/images/fireshow.jpg`,         `Кто крутит`),
-    IndexCarouselItem(les?.link,   `/images/backwards-posing.jpg`, `Как крутить`),
+  return new cl.Carousel().init(
+    E.div
+      .props(A.bgImg(`/images/colourful-balls.jpg`))
+      .chi(
+        E.div
+          .props(A.cls(`brand-logo`))
+          .chi(E.div.props(A.cls(`brand-logo-background`))),
+      ),
+    IndexCarouselItem(`/articles`,    `/images/spinning-red.jpg`,     `Что крутить`),
+    IndexCarouselItem(`/videos`,      `/images/fireshow.jpg`,         `Кто крутит`),
+    IndexCarouselItem(les?.urlPath(), `/images/backwards-posing.jpg`, `Как крутить`),
   )
 }
 
 function IndexCarouselItem(href, img, title) {
-  return e.a(
-    {href, class: `carousel-item sf-jumbo page-banner`, style: u.bgImg(img)},
-    e.h2v(title),
-  )
+  return E.a
+    .props(A.href(href).bgImg(img))
+    .chi(E.h2.chi(title))
 }
 
 function IndexSupport() {
-  return e.div(
-    {style: `padding: 1rem 1rem 0 1rem`},
-    e.a(
-      {
-        href: `/support`,
-        class: `sf-jumbo row-around-stretch relative hover-bg-zoom`,
-        style: {...u.bgImg(`/images/armful-of-poi.jpg`), height: `12rem`},
-      },
-      e.div(
-        {class: `text-center flex-1 col-center-center`},
-        e.h2v(e.span({class: `fa fa-arrow-circle-o-right`}, ` Поддержать проект`)),
-      ),
-    ),
+  return E.div.props(A.style(`padding: 1rem 1rem 0 1rem`)).chi(
+    E.a
+      .props(
+        A
+          .href(`/support`)
+          .cls(`sf-jumbo row-around-stretch relative hover-bg-zoom`)
+          .style(`height: 12rem`)
+          .bgImg(`/images/armful-of-poi.jpg`)
+      )
+      .chi(
+        E.div
+          .props(A.cls(`text-center flex-1 col-center-center`))
+          .chi(E.h2.chi(E.span.props(A.cls(`fa fa-arrow-circle-o-right`)).chi(` Поддержать проект`))),
+      )
   )
 }
 
 function IndexHighlights(site) {
-  const les = site.lessons[0]
+  const les = a.head(site.lessons)
 
-  return e.div(
-    {class: `row-between-stretch pad space-out-h`},
+  return E.div.props(A.cls(`row-between-stretch pad space-out-h`)).chi(
     IndexHighlight({
       link: `/articles`,
       image: `/images/square/sunny-learn.jpg`,
@@ -148,8 +201,8 @@ function IndexHighlights(site) {
       title: `Увидеть`,
       sub: `Выступления мастеров пои оставляют яркие впечатления надолго!`,
     }),
-    les && IndexHighlight({
-      link: les.link,
+    a.vac(les) && IndexHighlight({
+      link: les.urlPath(),
       image: `/images/square/sunny-try.jpg`,
       title: `Попробовать`,
       sub: `Обучение искусству кручения пои — это веселый, интересный и захватывающий процесс!`,
@@ -158,13 +211,11 @@ function IndexHighlights(site) {
 }
 
 function IndexHighlight({link, image, title, sub}) {
-  return e.a(
-    {href: link, class: `flex-1 marketing-highlight`},
-    e.div({style: u.bgImg(image)}),
-    e.div(
-      {class: `container`},
-      e.h2({class: `theme-text-primary`}, title),
-      e.pv(sub),
+  return E.a.props(A.href(link).cls(`flex-1 marketing-highlight`)).chi(
+    E.div.props(A.bgImg(image)),
+    E.div.props(A.cls(`container`)).chi(
+      E.h2.props(A.cls(`theme-text-primary`)).chi(title),
+      E.p.chi(sub),
     ),
   )
 }
@@ -173,20 +224,18 @@ function IndexQuote(quote) {
   if (!quote) return undefined
 
   return [
-    e.hr(),
-    e.div(
-      {class: `container narrow-inverse center-by-margins text-large`},
+    E.hr,
+    E.div.props(A.cls(`container narrow-inverse center-by-margins text-large`)).chi(
       sm.RenderQuote(quote),
     ),
   ]
 }
 
 function IndexFeaturettes(site) {
-  const video = site.videos[0]
-  const les = site.lessons[0]
+  const video = a.head(site.videos)
+  const les = a.head(site.lessons)
 
-  return e.div(
-    {class: `pad`},
+  return E.div.props(A.cls(`pad`)).chi(
     IndexFeaturette({
       link: `/articles`,
       image: u.youtubeImageUrl(`JusDCjOxfGM`),
@@ -194,265 +243,243 @@ function IndexFeaturettes(site) {
       text:  `Вдохновляйтесь!`,
       sub:   `Крутить пои могут все и всегда.`,
     }),
-    video && IndexFeaturette({
-      link:  video.link,
-      image: video.image,
-      embed: video.embed,
+    a.vac(video) && IndexFeaturette({
+      link:  video.urlPath(),
+      image: video.ent.image(),
+      embed: video.ent.embed(),
       text: `Смотрите!`,
       sub:  `Впечатляющие выступления артистов.`,
     }),
-    les && IndexFeaturette({
-      link:  les.link,
-      image: les.image,
-      embed: les.embed,
+    a.vac(les) && IndexFeaturette({
+      link:  les.urlPath(),
+      image: les.ent.image(),
+      embed: les.ent.embed(),
       text: `Тренируйтесь!`,
       sub:  `Больше элементов — больше свободы.`,
     }),
-    e.hr(),
+    E.hr,
     sm.SocialLinks(),
     IndexFeaturettePlaceholder(),
   )
 }
 
 function IndexFeaturette({link, image, embed, text, sub}) {
-  return e.div(
-    {class: `index-featurette`},
-    e.hr(),
-    e.div(
-      {class: `index-featurette-content`},
-      e.div(
-        {class: `flex-7`},
-        sm.VideoEmbed(embed, image),
-      ),
-      e.div(
-        {class: `flex-5 self-center container`},
-        e.h2v(e.a({href: link, ...u.mainLinkProps}, text)),
-        sub && e.h3v(sub),
+  return E.div.props(A.cls(`index-featurette`)).chi(
+    E.hr,
+    E.div.props(A.cls(`index-featurette-content`)).chi(
+      E.div.props(A.cls(`flex-7`)).chi(sm.VideoEmbed(embed, image)),
+      E.div.props(A.cls(`flex-5 self-center container`)).chi(
+        E.h2.chi(E.a.props(A.href(link).hrefMain()).chi(text)),
+        a.vac(sub) && E.h3.chi(sub),
       )
     ),
   )
 }
 
 function IndexFeaturettePlaceholder() {
-  return e.div(
-    {class: `index-featurette`},
-    e.hr(),
-    e.div({class: `index-featurette-content narrow-inverse-center`}),
+  return E.div.props(A.cls(`index-featurette`)).chi(
+    E.hr,
+    E.div.props(A.cls(`index-featurette-content narrow-inverse-center`)),
   )
 }
 
 export class PageArticles extends Page {
-  get link() {return `/articles`}
   get title() {return `Что крутить (узнайте о пои)`}
+  urlPath() {return `/articles`}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
         img: `/images/spinning-red.jpg`,
-        title: `Что крутить (узнайте о пои)`,
+        title: this.title,
       }),
-      e.div({class: `sm-grid-1 grid-2`}, f.map(site.articles, ArticleFeedItem)),
-    ))
+      E.div
+        .props(A.cls(`sm-grid-1 grid-2`))
+        .chi(a.map(this.site.articles, ArticleFeedItem)),
+    )
   }
 }
 
-function ArticleFeedItem(val) {
-  return e.a(
-    {href: val.link, class: `grid-item`},
-    e.div({
-      class: `preview`,
-      style: {...u.bgImg(val.image), minWidth: `8em`},
-    }),
-    e.h3v(
-      val.title,
-      f.vac(val.IsDraft && e.sup(
-        {class: `theme-primary`, style: {marginLeft: `0.5rem`}},
-        `черновик`,
+function ArticleFeedItem(page) {
+  const ent = a.reqInst(page.ent, d.Article)
+
+  return E.a.props(A.href(page.urlPath()).cls(`grid-item`)).chi(
+    E.div.props(
+      A.cls(`preview`)
+      .style(`min-width: 8em`)
+      .bgImg(ent.image)
+    ),
+    E.h3.chi(
+      ent.title,
+      a.vac(ent.IsDraft && (
+        E.sup
+          .props(A.cls(`theme-primary`).style(`margin-left: 0.5rem`))
+          .chi(`черновик`)
       )),
     ),
-    e.p({class: `text-break`}, val.snippet),
+    E.p.props(A.cls(`text-break`)).chi(ent.snippet),
   )
 }
 
-export class PageArticle extends d.Article {
-  get link() {return u.pathJoin(`/articles`, this.slug)}
-  get desc() {return this.snippet}
-  get path() {return this.link + `.html`}
+export class PageArticle extends Page {
+  urlPath() {return this.ent.urlPath()}
+  desc() {return this.ent.snippet}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
-        img:   this.image,
-        title: this.title,
+        img: this.ent.image,
+        title: this.ent.title,
       }),
-      e.div(
-        {class: `row-between-stretch sm-col-start-stretch`},
+      E.div.props(A.cls(`row-between-stretch sm-col-start-stretch`)).chi(
         ArticleMain(this),
-        ArticleSidenav(this, site),
+        ArticleSidenav(this),
       ),
-    ))
+    )
   }
 }
 
 function ArticleMain(page) {
-  const authorName = page.guessAuthorName()
+  const ent = a.reqInst(page.ent, d.Article)
+  const authorName = ent.guessAuthorName()
 
-  return e.article(
-    {class: `md-flex-3`},
-    e.h2(
-      {class: `row-between-center`},
-      e.spanv(
-        page.title,
-        f.vac(page.isDraft && e.sup({class: `theme-primary`}, `черновик`)),
+  return E.article.props(A.cls(`md-flex-3`)).chi(
+    E.h2.props(A.cls(`row-between-center`)).chi(
+      E.span.chi(
+        ent.title,
+        a.vac(ent.isDraft && E.sup.props(A.cls(`theme-primary`)).chi(`черновик`)),
       ),
     ),
-    e.div(
-      {class: `article-info`},
-      e.dlv(
-        f.vac(authorName && [
-          e.dtv(
-            e.span({class: `fa fa-user inline`}),
-            e.spanv(` Автор`),
+    E.div.props(A.cls(`article-info`)).chi(
+      E.dl.chi(
+        a.vac(authorName) && [
+          E.dt.chi(
+            E.span.props(A.cls(`fa fa-user inline`)),
+            E.span.chi(` Автор`),
           ),
-          e.ddv(authorName),
-        ]),
-        f.vac(page.createdAt && [
-          e.dtv(
-            e.span({class: `fa fa-calendar inline`}),
-            e.spanv(` Дата`),
+          E.dd.chi(authorName),
+        ],
+        a.vac(ent.createdAt) && [
+          E.dt.chi(
+            E.span.props(A.cls(`fa fa-calendar inline`)),
+            E.span.chi(` Дата`),
           ),
-          e.ddv(new u.ShortDate(page.createdAt)),
-        ]),
-        f.vac(page.photographerName && [
-          e.dtv(
-            e.span({class: `fa fa-camera inline`}),
-            e.spanv(` Фотограф`),
+          E.dd.chi(new a.DateShort(ent.createdAt)),
+        ],
+        a.vac(ent.photographerName) && [
+          E.dt.chi(
+            E.span.props(A.cls(`fa fa-camera inline`)),
+            E.span.chi(` Фотограф`),
           ),
-          e.ddv(page.photographerName),
-        ]),
+          E.dd.chi(ent.photographerName),
+        ],
       ),
     ),
-    new x.Raw(u.mdToHtml(page.content)),
+    new p.Raw(u.mdToHtml(ent.content)),
   )
 }
 
-function ArticleSidenav(page, site) {
-  return e.div(
-    {class: `sm-grid-2 md-flex-1 md-order--1 pad-v`},
-    f.map(site.articles, val => ArticleSidenavItem(val, page)),
+function ArticleSidenav(page) {
+  return E.div.props(A.cls(`sm-grid-2 md-flex-1 md-order--1 pad-v`)).chi(
+    a.map(page.site.articles, val => ArticleSidenavItem(val, page)),
   )
 }
 
-function ArticleSidenavItem(val, page) {
-  return e.a(
-    {
-      href: val.link,
-      class: x.cls(`grid-item`, u.actCur(page, val.link)),
-    },
-    e.div({class: `preview`, style: u.bgImg(val.image)}),
-    e.pv(
-      val.title,
-      f.vac(val.isDraft && (
-        e.sup({class: `theme-primary`}, `черновик`)
-      )),
-    ),
-  )
+function ArticleSidenavItem(page, current) {
+  const ent = a.reqInst(page.ent, d.Article)
+
+  return E.a
+    .props(A.href(page.urlPath()).cur(current).cls(`grid-item`))
+    .chi(
+      E.div.props(A.cls(`preview`).bgImg(ent.image)),
+      E.p.chi(
+        ent.title,
+        a.vac(ent.isDraft) && (
+          E.sup.props(A.cls(`theme-primary`)).chi(`черновик`)
+        ),
+      ),
+    )
 }
 
 export class PageVideos extends Page {
-  get link() {return `/videos`}
   get title() {return `Кто крутит (выступления мастеров пои)`}
+  urlPath() {return `/videos`}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
         img:   `/images/fireshow.jpg`,
-        title: `Кто крутит (выступления мастеров пои)`,
-        sub:   e.pv(`Пои лучше один раз увидеть!`),
+        title: this.title,
+        sub:   E.p.chi(`Пои лучше один раз увидеть!`),
       }),
-      e.div({class: `row-between-stretch`},
+      E.div.props(A.cls(`row-between-stretch`)).chi(
         VideosIntro({
-          link:  site.videos[0]?.link,
+          link:  a.head(this.site.videos)?.urlPath(),
           title: `Выступления с пои`,
           img:   `/images/thumb-poi-fireshow.jpg`,
           sub: [
-            e.pv(`Посмотрите, что значит крутить пои по-настоящему эффектно!`),
-            e.pv(`Профессиональные выступления с огненными или световыми пои никого не оставят равнодушным.`),
+            E.p.chi(`Посмотрите, что значит крутить пои по-настоящему эффектно!`),
+            E.p.chi(`Профессиональные выступления с огненными или световыми пои никого не оставят равнодушным.`),
           ],
         }),
 
-        e.div({class: `flex-none line-vertical`, style: {margin: '0'}}),
+        E.div.props(A.cls(`flex-none line-vertical`).style(`margin: 0`)),
 
         VideosIntro({
-          link:  site.techVideos[0]?.link,
+          link:  a.head(this.site.techVideos)?.urlPath(),
           title: `Техблоги с пои`,
           img:   `/images/thumb-poi-techblog.jpg`,
           sub: [
-            e.pv(`Учитесь и вдохновляйтесь яркими видео настоящих мастеров поинга!`),
-            e.pv(`Специальные учебные видео с демонстрацией технического кручения пои, в которых можно почерпнуть идеи движений, связок и переходов.`),
+            E.p.chi(`Учитесь и вдохновляйтесь яркими видео настоящих мастеров поинга!`),
+            E.p.chi(`Специальные учебные видео с демонстрацией технического кручения пои, в которых можно почерпнуть идеи движений, связок и переходов.`),
           ],
         }),
       ),
-    ))
+    )
   }
 }
 
 function VideosIntro({link, title, img, sub}) {
-  return e.a(
-    {href: link, class: `block flex-1 container text-center`},
-    e.h1({class: `text-center`}, title),
-    e.div(
-      {class: `fat-block`},
-      e.div({
-        class: `fat-block-body shadow background-cover`,
-        style: u.bgImg(img),
-      }),
+  return E.a.props(A.href(link).cls(`block flex-1 container text-center`)).chi(
+    E.h1.props(A.cls(`text-center`)).chi(title),
+    E.div.props(A.cls(`fat-block`)).chi(
+      E.div.props(A.cls(`fat-block-body shadow background-cover`).bgImg(img)),
     ),
     sub,
   )
 }
 
-export class PageVideo extends d.Video {
-  get link() {return u.pathJoin(`/videos`, this.slug)}
-  get path() {return this.link + `.html`}
+export class PageVideo extends Page {
+  urlPath() {return this.ent.urlPath()}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
-        img:   `/images/thumb-poi-fireshow.jpg`,
+        img: `/images/thumb-poi-fireshow.jpg`,
         title: `Кто крутит (выступления мастеров пои)`,
-        sub:   e.pv(`Пои лучше один раз увидеть!`),
+        sub: E.p.chi(`Пои лучше один раз увидеть!`),
       }),
-      VideoSubnav(this, site),
-      e.div(
-        {class: `row-between-stretch pad space-out-h`},
-        VideoSidenav(this, site),
+      VideoSubnav(this),
+      E.div.props(A.cls(`row-between-stretch pad space-out-h`)).chi(
+        VideoSidenav(this),
         VideoMain(this),
       ),
-      VideoFeed(this, site),
-    ))
+      VideoFeed(this),
+    )
   }
 }
 
-function VideoSubnav(page, site) {
-  return e.div(
-    {
-      id: c.ID_MAIN,
-      class: `sf-navbar sf-navbar-tabs`,
-    },
+function VideoSubnav(page) {
+  return E.div.props(A.id(c.ID_MAIN).cls(`sf-navbar sf-navbar-tabs`)).chi(
     VideoSubnavLink({
       page,
-      link: site.videos[0]?.link,
+      link: a.head(page.site.videos)?.urlPath(),
       base: `/videos`,
       text: `Выступления с пои`,
     }),
     VideoSubnavLink({
       page,
-      link: site.techVideos[0]?.link,
+      link: a.head(page.site.techVideos)?.urlPath(),
       base: `/tech-videos`,
       text: `Техблоги с пои`,
     }),
@@ -460,53 +487,55 @@ function VideoSubnav(page, site) {
 }
 
 function VideoSubnavLink({page, link, base, text}) {
-  return e.a(
-    {href: link, class: u.actCur(page, base), ...u.mainLinkProps},
-    text,
-  )
+  return E.a.props(A.href(link).hrefMain().cur(page, base)).chi(text)
 }
 
-function VideoSidenav(page, site) {
-  return e.div(
-    {class: `flex-1 col-between-stretch space-out`, style: {minHeight: `8em`}},
-    f.map(d.videosAround(site, page.id), val => VideoSidenavItem(val, page)),
-  )
+function VideoSidenav(page) {
+  return E.div
+    .props(
+      A.cls(`flex-1 col-between-stretch space-out`).style(`min-height: 8em`)
+    )
+    .chi(
+      a.map(page.site.dat.videos.around(a.pk(page)), val => VideoSidenavItem(val, page)),
+    )
 }
 
-function VideoSidenavItem(val, page) {
-  // TODO convert to `aria-current`.
-  const cur = val.id && f.is(val.id, page.id)
-
-  return e.a(
-    {
-      href: val.link,
-      class: x.cls(`flex-1 row-center-stretch`, cur && `outline-thick`),
-      ...u.mainLinkProps,
-    },
-    e.div({
-      class: `flex-1 background-cover`,
-      style: u.bgImg(val.image),
-      'data-overtip': val.title,
-    }),
-  )
+function VideoSidenavItem(video, current) {
+  return E.a
+    .props(
+      A
+      .href(video.urlPath())
+      .hrefMain()
+      .cls(`flex-1 row-center-stretch`)
+      // TODO convert to `aria-current`.
+      .cls(u.pkEq(video, current) && `outline-thick`)
+    )
+    .chi(
+      E.div.props(
+        A
+        .cls(`flex-1 background-cover`)
+        .bgImg(video.image())
+        .set(`data-overtip`, video.title)
+      )
+    )
 }
 
 function VideoMain(page) {
-  return e.div(
-    {class: `flex-4`},
-    e.div(
-      {class: `space-out`},
-      sm.VideoEmbed(page.embed, page.image),
+  const ent = a.reqInst(page.ent, d.Video)
+
+  return E.div.props(A.cls(`flex-4`)).chi(
+    E.div.props(A.cls(`space-out`)).chi(
+      sm.VideoEmbed(ent.embed(), ent.image()),
 
       // Video title and favorite toggle.
-      e.h2(
-        {class: `sm-space-out md-space-out col-start-start lg-row-between-center lg-space-out-h`},
-        e.div({class: `flex-1`}, sm.TitleWithTooltip(page)),
-        e.div(
-          {class: `row-center-center space-out-h-half`},
-          VideoControls(page),
+      E.h2
+        .props(
+          A.cls(`sm-space-out md-space-out col-start-start lg-row-between-center lg-space-out-h`)
+        )
+        .chi(
+          E.div.props(A.cls(`flex-1`)).chi(sm.TitleWithTooltip(ent)),
+          E.div.props(A.cls(`row-center-center space-out-h-half`)).chi(VideoControls(page)),
         ),
-      ),
     ),
   )
 }
@@ -514,256 +543,228 @@ function VideoMain(page) {
 function VideoControls(page) {
   if (c.MOCK_IS_AUTHED) {
     return [
-      e.span({'data-favorite-video-toggle': JSON.stringify({id: page.id})}),
-      e.a({href: `/profile/favorites`, class: `decorated text-smaller`}, `(все)`),
+      E.span.props(A.set(`data-favorite-video-toggle`, JSON.stringify({id: a.pk(page)}))),
+      E.a.props(A.href(`/profile/favorites`).cls(`decorated text-smaller`)).chi(`(все)`),
     ]
   }
 
   if (c.MOCK_ENABLE_AUTH) {
-    return e.span(
-      {'data-sf-tooltip': `Залогиньтесь, чтобы добавить в избранное`},
-      e.span({'data-modal-trigger': `{"type":"login"}`, class: `mock-checkbox-heart`}),
-    )
+    return E.span
+      .props(A.set(`data-sf-tooltip`, `Залогиньтесь, чтобы добавить в избранное`))
+      .chi(E.span.props(A.cls(`mock-checkbox-heart`).set(`data-modal-trigger`, `{"type":"login"}`)))
   }
 
   return undefined
 }
 
-function VideoFeed(page, site) {
-  return e.div(
-    {class: `grid-2 md-grid-4`},
-    f.map(site.videos, val => VideoFeedItem(val, page)),
+function VideoFeed(page) {
+  return E.div.props(A.cls(`grid-2 md-grid-4`)).chi(
+    a.map(page.site.videos, val => VideoFeedItem(val, page)),
   )
 }
 
-function VideoFeedItem(val, page) {
-  return e.a(
-    {
-      href: val.link,
-      class: x.cls(`grid-item`, u.actCur(page, val.link)),
-      ...u.mainLinkProps,
-    },
-    e.div(
-      {class: `preview`, style: u.bgImg(val.image)},
-      e.pv(sm.TitleWithTooltip(val)),
-    ),
-  )
+function VideoFeedItem(page, current) {
+  const ent = a.reqInst(page.ent, d.Video)
+
+  return E.a
+    .props(
+      A.href(page.urlPath()).hrefMain().cls(`grid-item`).cur(current)
+    )
+    .chi(
+      E.div.props(A.cls(`preview`).bgImg(ent.image())).chi(
+        E.p.chi(sm.TitleWithTooltip(ent)),
+      ),
+    )
 }
 
-export class PageTechVideo extends d.TechVideo {
-  get link() {return u.pathJoin(`/tech-videos`, this.slug)}
-  get path() {return this.link + `.html`}
+export class PageTechVideo extends Page {
+  urlPath() {return this.ent.urlPath()}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
         img:   `/images/thumb-poi-techblog.jpg`,
         title: `Техблоги с пои`,
-        sub:   e.pv(`Учитесь и вдохновляйтесь яркими видео настоящих мастеров поинга!`),
+        sub:   E.p.chi(`Учитесь и вдохновляйтесь яркими видео настоящих мастеров поинга!`),
       }),
-      VideoSubnav(this, site),
-      e.div(
-        {class: `row-between-stretch`},
-        TechVideoSidenav(this, site),
-        TechVideoMain(this, site),
+      VideoSubnav(this),
+      E.div.props(A.cls(`row-between-stretch`)).chi(
+        TechVideoSidenav(this),
+        TechVideoMain(this),
       ),
-    ))
+    )
   }
 }
 
-function TechVideoSidenav(page, site) {
-  return e.div(
-    {class: `flex-none`, style: {minWidth: `12em`, maxWidth: `33%`}},
-    e.div(
-      {class: `sidenav`, style: {maxWidth: `16em`}},
-      sm.LanguageToggle() || e.br(),
-      f.map(
-        site.authors,
-        author => TechVideoSidenavAuthor(author, page),
+function TechVideoSidenav(page) {
+  return E.div
+    .props(A.cls(`flex-none`).style(`min-width: 12em; max-width: 33%`))
+    .chi(
+      E.div.props(A.cls(`sidenav`).style(`max-width: 16em`)).chi(
+        sm.LanguageToggle() || E.br,
+        a.map(
+          page.site.dat.authors,
+          author => TechVideoSidenavAuthor(author, page),
+        ),
       ),
-    ),
-  )
+    )
 }
 
 function TechVideoSidenavAuthor(author, page) {
-  const videos = author.techVideos
-  if (!f.len(videos)) return undefined
+  const video = author.firstTechVideo()
+  if (!video) return undefined
 
-  return e.a(
-    {
-      href: videos[0].link,
-      class: u.act(author.id === page.authorId),
-      ...u.mainLinkProps,
-    },
-    e.spanv(author.fullName),
-  )
+  return E.a
+    .props(
+      A.href(video.urlPath()).hrefMain().current(author.id === page.ent.authorId)
+    )
+    .chi(E.span.chi(author.fullName))
 }
 
-function TechVideoMain(page, site) {
-  return e.div(
-    {class: `flex-1 pad-h`},
-    e.div(
-      {class: `flex-1 space-out`},
-      e.br(),
-      e.div(
-        {class: `grid-2 md-grid-4`},
-        f.map(
-          page.author.techVideos,
-          val => TechVideoPreview(val, page),
-        )
+function TechVideoMain(page) {
+  return E.div.props(A.cls(`flex-1 pad-h`)).chi(
+    E.div.props(A.cls(`flex-1 space-out`)).chi(
+      E.br,
+      E.div.props(A.cls(`grid-2 md-grid-4`)).chi(
+        a.map(page.ent.author().techVideos(), val => TechVideoPreview(val, page))
       ),
-      TechVideoView(page, site),
+      TechVideoView(page),
     ),
   )
 }
 
-function TechVideoPreview(val, page) {
-  return e.a(
-    {
-      href: val.link,
-      class: x.cls(`pad space-out`, u.act(val.id === page.id)),
-      ...u.mainLinkProps,
-    },
-    e.pv(sm.TitleWithTooltip(val)),
+function TechVideoPreview(video, current) {
+  return E.a
+    .props(
+      A.href(video.urlPath()).hrefMain().cur(current).cls(`pad space-out`)
+    )
+    .chi(E.p.chi(sm.TitleWithTooltip(video)))
+}
+
+function TechVideoView(page) {
+  const ent = a.reqInst(page.ent, d.TechVideo)
+
+  return E.div.props(A.cls(`space-out`)).chi(
+    sm.VideoEmbed(ent.embed(), ent.image()),
+    TechVideoTitle(ent),
+    TechVideoViewAuthor(ent.author()),
   )
 }
 
-function TechVideoView(page, site) {
-  return e.div(
-    {class: `space-out`},
-    sm.VideoEmbed(page.embed, page.image),
-    TechVideoTitle(page),
-    TechVideoViewAuthor(page, site),
-  )
+function TechVideoTitle(ent) {
+  return E.h2.chi(sm.TitleWithTooltip(ent))
 }
 
-function TechVideoTitle(page) {
-  return e.h2v(sm.TitleWithTooltip(page))
-}
-
-function TechVideoViewAuthor(page) {
-  const {author} = page
-
+function TechVideoViewAuthor(author) {
   return [
-    e.pv(
-      e.span({class: `fa fa-user inline`}),
-      e.spanv(` Автор: `, author.fullName),
+    E.p.chi(
+      E.span.props(A.cls(`fa fa-user inline`)),
+      E.span.chi(` Автор: `, author.fullName),
     ),
-    f.vac(author.youtubeChannelUrl) && e.pv(
-      e.span({class: `fa fa-youtube-play inline`}),
-      e.spanv(` Канал:`),
-      e.a({href: author.youtubeChannelUrl, ...u.ablan}, author.youtubeChannelUrl),
+    a.vac(author.youtubeChannelUrl) && E.p.chi(
+      E.span.props(A.cls(`fa fa-youtube-play inline`)),
+      E.span.chi(` Канал:`),
+      E.a.props(A.href(author.youtubeChannelUrl).tarblan()).chi(author.youtubeChannelUrl),
     ),
   ]
 }
 
-export class PageLesson extends d.Lesson {
-  get link() {return u.pathJoin(`/lessons`, this.id)}
-  get path() {return this.link + `.html`}
+export class PageLesson extends Page {
+  urlPath() {return this.ent.urlPath()}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
         img: `/images/backwards-posing.jpg`,
         title: `Как крутить (видео-уроки поинга)`,
-        sub: e.pv(`Наши видео-уроки поинга позволят вам освоить элементы постепенно, от простых к сложным!`),
+        sub: E.p.chi(`Наши видео-уроки поинга позволят вам освоить элементы постепенно, от простых к сложным!`),
       }),
-      LessonNavbar(this, site),
-      LessonMain(this, site),
-    ))
+      LessonNavbar(this),
+      LessonMain(this),
+    )
   }
 }
 
-function LessonNavbar(page, site) {
-  return e.div(
-    {id: c.ID_MAIN, class: `sf-navbar sf-navbar-tabs`},
-    f.map(site.skillLevels, val => LessonNavbarSkillLevel(val, page))
-  )
+function LessonNavbar(page) {
+  return E.div
+    .props(A.id(c.ID_MAIN).cls(`sf-navbar sf-navbar-tabs`))
+    .chi(a.map(page.site.dat.skillLevels, val => (
+      LessonNavbarSkillLevel(val, page)
+    )))
 }
 
-function LessonNavbarSkillLevel(skillLevel, les) {
+function LessonNavbarSkillLevel(skillLevel, page) {
   const icon = skillLevelIcons[skillLevel.level]
 
-  return e.a(
-    {
-      href: skillLevel.firstLesson()?.link,
-      class: u.act(les.move.element.skillLevel === skillLevel),
-      ...u.mainLinkProps,
-    },
-    // e.span({class: skillLevelIcons[skillLevel.level]}),
-    icon && e.span({class: `sf-icon`}, icon),
-    e.spanv(skillLevel.title),
-  )
+  return E.a
+    .props(
+      A
+      .href(skillLevel.firstLesson()?.urlPath())
+      .hrefMain()
+      .current(page.ent.move().element().skillLevelId === a.pk(skillLevel))
+    )
+    .chi(
+      a.vac(icon) && E.span.props(A.cls(`sf-icon`)).chi(icon),
+      E.span.chi(skillLevel.title),
+    )
 }
 
 const skillLevelIcons = [
   undefined,
-  sv.SvgSkillLevelBasic,
-  sv.SvgSkillLevelAdvanced,
-  sv.SvgSkillLevelMasterful,
+  sm.SvgSkillLevelBasic,
+  sm.SvgSkillLevelAdvanced,
+  sm.SvgSkillLevelMasterful,
   // 'sf-icon-skill-level-basic',
   // 'sf-icon-skill-level-advanced',
   // 'sf-icon-skill-level-masterful',
 ]
 
-function LessonMain(les, site) {
-  const elem = les.move.element
+function LessonMain(page) {
+  const elem = page.ent.move().element()
 
-  return e.div(
-    {class: `row-between-stretch`},
-    SidenavElements(elem, site),
-    LessonView(les, site),
+  return E.div.props(A.cls(`row-between-stretch`)).chi(
+    SidenavElements(elem),
+    LessonView(page),
   )
 }
 
-function SidenavElements(elem, site) {
-  return e.div(
-    {class: `flex-none`, style: `min-width: 12em; max-width: 33%`},
-    e.div(
-      {class: `sidenav`, style: `max-width: 16em`},
-      sm.LanguageToggle() || e.br(),
-      SkillLevelElements(elem, site),
+function SidenavElements(elem) {
+  return E.div.props(A.cls(`flex-none`).style(`min-width: 12em; max-width: 33%`)).chi(
+    E.div.props(A.cls(`sidenav`).style(`max-width: 16em`)).chi(
+      sm.LanguageToggle() || E.br,
+      SkillLevelElements(elem),
     )
   )
 }
 
-function SkillLevelElements(curElem, site) {
-  const {skillLevel: level} = curElem
-
-  return f.map(
-    level.elements,
-    elem => SkillLevelElement(elem, site, elem === curElem),
+function SkillLevelElements(curElem) {
+  return a.map(
+    curElem.skillLevel().elements(),
+    elem => SkillLevelElement(elem, u.pkEq(elem, curElem)),
   )
 }
 
-function SkillLevelElement(elem, site, active) {
+function SkillLevelElement(elem, current) {
   const les = elem.firstLesson()
   if (!les) return undefined
 
-  return e.a(
-    {href: les.link, class: u.act(active), ...u.mainLinkProps},
+  return E.a.props(A.href(les.urlPath()).hrefMain().current(current)).chi(
     sm.TitleWithTooltip(elem),
   )
 }
 
-function LessonView(page, site) {
-  const {move} = page
-  const moves = move.siblings
+function LessonView(page) {
+  const move = page.ent.move()
+  const moves = move.siblings()
 
-  return e.div(
-    {class: `flex-1 pad-h`},
-    e.div(
-      {class: `flex-1 space-out`},
-      e.br(),
-      e.div(
-        {class: `grid-2 md-grid-4`},
-        MovesNavbar(moves, page, site),
+  return E.div.props(A.cls(`flex-1 pad-h`)).chi(
+    E.div.props(A.cls(`flex-1 space-out`)).chi(
+    E.br,
+      E.div.props(A.cls(`grid-2 md-grid-4`)).chi(
+        MovesNavbar(move, moves),
       ),
-      e.div(
-        {class: `space-out`},
-        LessonActualContent(page, site),
+      E.div.props(A.cls(`space-out`)).chi(
+        LessonActualContent(page),
         MoveLessons(move, page),
       ),
     ),
@@ -771,176 +772,159 @@ function LessonView(page, site) {
 }
 
 
-function MovesNavbar(moves, les, site) {
-  const {move: curMove} = les
-  return f.map(moves, move => MoveNavbarItem(move, site, move === curMove))
+function MovesNavbar(curMove, moves) {
+  return a.map(moves, move => (
+    MoveNavbarItem(move, u.pkEq(move, curMove))
+  ))
 }
 
-function MoveNavbarItem(move, site, active) {
-  return e.a(
-    {
-      class: x.cls(`pad space-out`, u.act(active)),
-      href: move.firstLesson()?.link,
-      ...u.mainLinkProps,
-    },
-    e.pv(sm.TitleWithTooltip(move)),
-    e.p(
-      {class: `stars-container`},
-      f.times(move.rating, i => (
-        e.span({class: x.cls(`star`, u.act(move.rating >= i))})
-      )),
-    ),
-  )
+function MoveNavbarItem(move, current) {
+  return E.a
+    .props(
+      A.href(move.firstLesson()?.urlPath()).hrefMain().current(current).cls(`pad space-out`)
+    )
+    .chi(
+      E.p.chi(sm.TitleWithTooltip(move)),
+      E.p.props(A.cls(`stars-container`)).chi(
+        a.times(move.rating, ind => (
+          E.span.props(A.cls(`star`).active(move.rating >= ind))
+        )),
+      ),
+    )
 }
 
-function LessonActualContent(les, site) {
-  const {move} = les
+function LessonActualContent(page) {
+  const ent = a.reqInst(page.ent, d.Lesson)
 
-  return e.div(
-    {class: `space-out`},
-    sm.VideoEmbed(les.embed, les.image),
-    MoveDetails(move),
-    LessonDetails(les, site),
+  return E.div.props(A.cls(`space-out`)).chi(
+    sm.VideoEmbed(ent.embed(), ent.image()),
+    MoveDetails(ent.move()),
+    LessonDetails(page),
   )
 }
 
 function MoveDetails(move) {
   return [
     MoveTitleWithControls(move),
-    move.desc && e.p({class: `text-break`}, move.desc),
+    a.vac(move.desc) && E.p.props(A.cls(`text-break`)).chi(move.desc),
   ]
 }
 
 function MoveTitleWithControls(move) {
-  return e.h2(
-    {class: `sm-space-out md-space-out col-start-start lg-row-between-center lg-space-out-h`},
-    MoveTitle(move),
-    MoveControls(move),
-  )
+  return E.h2
+    .props(A.cls(`sm-space-out md-space-out col-start-start lg-row-between-center lg-space-out-h`))
+    .chi(MoveTitle(move), MoveControls(move))
 }
 
 function MoveTitle(move) {
-  return e.span({class: `flex-1`}, `Движение: `, sm.TitleWithTooltip(move))
+  return E.span.props(A.cls(`flex-1`)).chi(`Движение: `, sm.TitleWithTooltip(move))
 }
 
 function MoveControls(move) {
-  return e.span(
-    {class: `row-center-center row-inline space-out-h-half`},
+  return E.span.props(A.cls(`row-center-center row-inline space-out-h-half`)).chi(
     c.MOCK_IS_AUTHED
     ? [
-      e.span({'data-favorite-move-toggle': JSON.stringify({id: move.id})}),
-      e.span({'data-learned-move-toggle':  JSON.stringify({id: move.id})}),
-      e.a({href: `/profile/mastery`, class: `decorated text-smaller`}, `(все)`),
+      E.span.props(A.set(`data-favorite-move-toggle`, JSON.stringify({id: move.id}))),
+      E.span.props(A.set(`data-learned-move-toggle`,  JSON.stringify({id: move.id}))),
+      E.a.props(A.href(`/profile/mastery`).cls(`decorated text-smaller`)).chi(`(все)`),
     ]
     : c.MOCK_ENABLE_AUTH ? [
-      e.span(
-        {'data-sf-tooltip': `Залогиньтесь, чтобы добавить в избранное`},
-        e.span({
-          'data-modal-trigger': `{"type":"login"}`,
-          class: `mock-checkbox-bullseye`,
-        }),
-      ),
-      e.span(
-        {'data-sf-tooltip': `Залогиньтесь, чтобы отметить свой навык`},
-        e.span({
-          'data-modal-trigger': `{"type":"login"}`,
-          class: `mock-checkbox-circle`,
-        }),
-      ),
+      E.span
+        .props(A.set(`data-sf-tooltip`, `Залогиньтесь, чтобы добавить в избранное`))
+        .chi(E.span.props(A.cls(`mock-checkbox-bullseye`).set(`data-modal-trigger`, `{"type":"login"}`))),
+      E.span
+        .props(A.set(`data-sf-tooltip`, `Залогиньтесь, чтобы отметить свой навык`))
+        .chi(E.span.props(A.cls(`mock-checkbox-circle`).set(`data-modal-trigger`, `{"type":"login"}`))),
     ]
     : undefined,
   )
 }
 
-function LessonDetails(les, site) {
+function LessonDetails(page) {
   return [
-    e.h3v(`Урок: `, sm.TitleWithTooltip(les)),
-    LessonLang(les, site),
-    LessonAuthor(les, site),
+    E.h3.chi(`Урок: `, sm.TitleWithTooltip(page.ent)),
+    LessonLang(page),
+    LessonAuthor(page),
   ]
 }
 
-function LessonLang(les) {
-  const {lang} = les
+function LessonLang(page) {
+  const ent = a.reqInst(page.ent, d.Lesson)
+  const lang = ent.lang()
   if (!lang) return undefined
 
-  return e.pv(
-    e.spanv(`Язык: `),
-    e.span({class: `sf-icon-flag-${les.language} inline`}),
-    e.spanv(lang.title),
+  return E.p.chi(
+    E.span.chi(`Язык: `),
+    E.span.props(A.cls(a.san`sf-icon-flag-${ent.language} inline`)),
+    E.span.chi(lang.title),
   )
 }
 
-function LessonAuthor(les) {
-  const {author} = les
+function LessonAuthor(page) {
+  const ent = a.reqInst(page.ent, d.Lesson)
+  const author = ent.author()
 
   if (!author) {
-    return f.vac(les.authorName) && e.pv(
-      e.span({class: `fa fa-user inline`}),
-      e.spanv(` Автор: `, les.authorName),
+    return a.vac(ent.authorName) && E.p.chi(
+      E.span.props(A.cls(`fa fa-user inline`)),
+      E.span.chi(` Автор: `, ent.authorName),
     )
   }
 
-  const chan = author.youtubeChannelUrl || les.authorYoutubeChannelUrl
+  const chan = author.youtubeChannelUrl || ent.authorYoutubeChannelUrl
 
   return [
-    e.pv(
-      e.span({class: `fa fa-user inline`}),
-      e.spanv(` Автор: `, author.fullName),
+    E.p.chi(
+      E.span.props(A.cls(`fa fa-user inline`)),
+      E.span.chi(` Автор: `, author.fullName),
     ),
-    f.vac(chan) && e.pv(
-      e.span({class: `fa fa-youtube-play inline`}),
-      e.spanv(` Канал: `),
-      e.a({href: chan, ...u.ablan}, chan),
+    a.vac(chan) && E.p.chi(
+      E.span.props(A.cls(`fa fa-youtube-play inline`)),
+      E.span.chi(` Канал: `),
+      E.a.props(A.href(chan).tarblan()).chi(chan),
     ),
   ]
 }
 
 function MoveLessons(move, curLesson) {
-  const lessons = move.lessons
-
-  return e.div(
-    {class: `grid-2 md-grid-3`},
-    f.map(lessons, les => MoveLesson(les, les === curLesson)),
+  return E.div.props(A.cls(`grid-2 md-grid-3`)).chi(
+    a.map(move.lessons(), les => (
+      MoveLesson(les, u.pkEq(les, curLesson))
+    )),
   )
 }
 
-function MoveLesson(les, active) {
-  return e.a(
-    {
-      href: les.link,
-      class: x.cls(`grid-item`, u.act(active)),
-      style: `position: relative`,
-      ...u.mainLinkProps,
-    },
-    e.div({
-      class: `preview`,
-      style: u.bgImg(les.image),
-    }),
-    e.pv(
-      f.vac(les.language) && (
-        e.span({class: `sf-icon-flag-${les.language} size-4-to-3 inline`})
+function MoveLesson(les, current) {
+  return E.a
+    .props(
+      A.href(les.urlPath()).cls(`grid-item`).hrefMain().current(current).style(`position: relative`)
+    )
+    .chi(
+      E.div.props(A.cls(`preview`).bgImg(les.image())),
+      E.p.chi(
+        a.vac(les.language) && (
+          E.span.props(A.cls(a.san`sf-icon-flag-${les.language} size-4-to-3 inline`))
+        ),
+        sm.TitleWithTooltip(les),
       ),
-      sm.TitleWithTooltip(les),
-    ),
-  )
+    )
 }
 
 export class PageSupport extends Page {
-  get link() {return `/support`}
   get title() {return `Поддержать ProstoPoi`}
+  urlPath() {return `/support`}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    const props = A.id(c.ID_MAIN).cls(`row-center-center pad`)
+
+    return this.html(
       sm.Jumbo({
         img: `/images/shop/shop-title-cut.jpg`,
         title: this.title,
-        sub: e.pv(`Благодарим за вклад в развитие проекта!`),
+        sub: E.p.chi(`Благодарим за вклад в развитие проекта!`),
       }),
-      e.div(
-        {id: c.ID_MAIN, class: `row-center-center pad`},
-        e.iframe({
+      E.div.props(props).chi(
+        E.iframe.props({
           src: `https://money.yandex.ru/quickpay/shop-widget?writer=seller&targets=%D0%9F%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%BA%D0%B0%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0%20ProstoPoi.ru&targets-hint=&default-sum=100&button-text=11&payment-type-choice=on&hint=&successURL=&quickpay=shop&account=41001128987294`,
           width: `423`,
           height: `222`,
@@ -949,35 +933,44 @@ export class PageSupport extends Page {
           scrolling: `no`,
         }),
       ),
-    ))
+      // E.noscript.props(props).chi(
+      //   E.h2.chi(
+      //     `Для работы этой страницы нужно `,
+      //     E.a
+      //     .props(A.href(`https://enable-javascript.com`).cls(`decorated`).tarblan())
+      //     .chi(`включить JavaScript`),
+      //   )
+      // )
+    )
   }
 }
 
 export class PageAbout extends Page {
-  get link() {return `/about`}
   get title() {return `О нас`}
+  urlPath() {return `/about`}
 
-  res(site) {
-    return u.resHtml(sm.Html(
-      {page: this, site},
+  body() {
+    return this.html(
       sm.Jumbo({
         img: `/images/about-narrower.jpg`,
         title: this.title,
-        sub: e.pv(),
+        sub: E.p,
       }),
-      e.div(
-        {class: `pad`},
-        e.div(
-          {class: `shadow narrow-inverse-center sf-article`},
-          e.h2v(`Учитесь крутить пои и задавайте вопросы!`),
-          e.br(),
-          e.pv(`Мы — команда ProstoPoi. Здесь мы знакомим вас с миром пои и вдохновляем узнать его получше!`),
-          e.pv(`Мы готовы ответить на любые вопросы по поводу подбора реквизита, организации тренировок и обучения.`),
-          e.pv(`Обязательно добавляйтесь в нашу группу ВКонтакте и Facebook, смотрите канал на YouTube и читайте Twitter!`),
-          e.hr(),
+      E.div.props(A.cls(`pad`)).chi(
+        E.div.props(A.cls(`shadow narrow-inverse-center sf-article`)).chi(
+          E.h2.chi(`Учитесь крутить пои и задавайте вопросы!`),
+          E.br,
+          E.p.chi(`Мы — команда ProstoPoi. Здесь мы знакомим вас с миром пои и вдохновляем узнать его получше!`),
+          E.p.chi(`Мы готовы ответить на любые вопросы по поводу подбора реквизита, организации тренировок и обучения.`),
+          E.p.chi(`Обязательно добавляйтесь в нашу группу ВКонтакте и Facebook, смотрите канал на YouTube и читайте Twitter!`),
+          E.hr,
           sm.SocialLinks(),
+          E.hr,
+          sm.SiteSource(),
         ),
       ),
-    ))
+    )
   }
 }
+
+export const site = new Site(d.dat)

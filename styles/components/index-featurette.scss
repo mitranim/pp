@@ -31,14 +31,5 @@
     }
   }
 
-  &.about {
-    // Typography and dimensions.
-    text-align: center;
-
-    // Icon styles.
-    a {
-      // Bigger size.
-      font-size: 3em;
-    }
-  }
+  &.about {text-align: center;}
 }

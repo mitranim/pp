@@ -8,15 +8,15 @@ SSG remake of ProstoPoi: https://prostopoi.ru
 
 ## History
 
-The previous version used Django + Postgres. It was converted to an SSG (static site generator) to eliminate maintenance and reduce risks. The Git repository of the Django version remains private for now.
+The previous version used Django + Postgres. It was converted to an SSG (static site generator) to eliminate maintenance and reduce risks. The Git repository of the Django version remains private.
 
 ## Code
 
 * Site markup: `./scripts/site.mjs`
 * CLI commands: `./scripts/cmd_*.mjs`
-* Type definitions: `./scripts/dat_typ.mjs`
-* Data fixtures: `./scripts/init_*.mjs`
-* Article Markdown: `./templates/articles/*.md`
+* Data definitions: `./scripts/dat.mjs`
+* Data fixtures: `./scripts/dat_init_*.mjs`
+* Articles in markdown: `./templates/articles/*.md`
 
 ## Development
 
