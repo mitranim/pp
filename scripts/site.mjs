@@ -264,7 +264,7 @@ function IndexFeaturette({link, text, sub, src}) {
   return E.div.props(A.cls(`index-featurette`)).chi(
     E.hr,
     E.div.props(A.cls(`index-featurette-content`)).chi(
-      E.div.props(A.cls(`flex-7`)).chi(new cl.Yt().init(src, link)),
+      E.div.props(A.cls(`flex-7`)).chi(new cl.Embed().init(src, link)),
       E.div.props(A.cls(`flex-5 self-center container`)).chi(
         E.h2.chi(E.a.props(A.href(link).cls(`decorated`).hrefMain()).chi(text)),
         a.vac(sub) && E.h3.chi(sub),

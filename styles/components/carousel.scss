@@ -14,8 +14,7 @@
 .carousel-item {@extend .sf-jumbo;}
 
 .carousel-dots {
-  display: block;
-  position: absolute;
+  @extend .block, .abs;
   @include sf-trbl($sf-space * 2, $sf-space * 2, auto, auto);
   @include sf-space-out-horizontal($sf-space / 2);
 }
@@ -44,9 +43,7 @@
 
 .carousel-control {
   // Layout.
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  @extend .abs, .cen-ver;
 
   // Cosmetic.
   @extend .sf-button-flat;

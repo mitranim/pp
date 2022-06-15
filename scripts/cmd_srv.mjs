@@ -27,14 +27,14 @@ const srv = new class Srv extends hd.Srv {
   async res(req) {
     const rou = new a.ReqRou(req)
 
-    return (
+    return live(await (
       (await dirsPub.resolveSiteFile(rou.url))?.res() ||
       s.site.pageByPath(rou.url.pathname)?.res() ||
       s.site.notFound.res(rou)
-    )
+    ))
   }
 
-  errRes(err) {return new s.PageErr(s.site, err).res()}
+  errRes(err) {return live(new s.PageErr(s.site, err).res())}
 }()
 
 async function main() {
@@ -49,5 +49,7 @@ Requires `make live`, which is invoked by default by `make`.
 function liveReload() {
   fetch(cl.LIVE_SEND, {method: `post`, body: `{"type":"change"}`}).catch(a.nop)
 }
+
+function live(res) {return ld.withLiveClient(cl.LIVE_CLIENT, res)}
 
 if (import.meta.main) await main()

@@ -25,10 +25,12 @@
   }
 }
 
-// Image preview styles.
+/*
+Image preview styles. Caution: requires additional `display: block` or `display:
+flex`. Can be used on block elements as-is.
+*/
 .preview {
   // Layout.
-  display: block;
   width: auto;
   height: 8em;
 

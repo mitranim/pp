@@ -168,3 +168,19 @@ body {
 @include media-prefixed(margin-right-half)  {margin-right: $sf-space / 2}
 @include media-prefixed(margin-bottom-half) {margin-bottom: $sf-space / 2}
 @include media-prefixed(margin-left-half)   {margin-left: $sf-space / 2}
+
+.abs {position: absolute;}
+
+// Requires `.abs`.
+.cen-ver {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+// Requires `.abs`.
+.cen-hor {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.abs-cen {@extend .abs, .cen-ver, .cen-hor;}

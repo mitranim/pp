@@ -1,5 +1,4 @@
 .fa {
-
   // Cosmetic.
   text-align: center;
   // &::before {
@@ -11,19 +10,13 @@
 
   &.inline {
     // vertical-align: -0.1em;
-    &:not(:first-child) {
-      margin-left: 0.3em;
-    }
-    &:not(:last-child) {
-      margin-right: 0.3em;
-    }
+    &:not(:first-child) {margin-left: 0.3em;}
+    &:not(:last-child) {margin-right: 0.3em;}
     width: 1em;
     height: 1em;
   }
 
-  &.fa-dot::before {
-    content: '•';
-  }
+  &.fa-dot::before {content: '•';}
 
   // Brand colours.
   &.fa-facebook     {color: $color-facebook}
@@ -38,8 +31,11 @@
   // Sizes.
   &.size-medium {font-size: 1.5em}
   &.size-large {font-size: 3em}
+  &.size-larger {font-size: 4em}
 
   @include sf-transitions(all);
+
+  &.--free {line-height: 0;}
 }
 
 .fa.light {

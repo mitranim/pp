@@ -4,7 +4,6 @@ import * as io from '@mitranim/js/io_deno.mjs'
 import * as c from './conf.mjs'
 import {E, A} from './util.mjs'
 import * as u from './util.mjs'
-import * as cl from './cmd_live.mjs'
 
 const importmap = (
   await io.readTextOpt(`importmap_client_override.json`) ||
@@ -32,7 +31,6 @@ export function Html(page, ...children) {
           .src(`https://cdn.jsdelivr.net/npm/@ungap/custom-elements@1.0.0/es.js`)
         ),
         E.script.props(A.type(`module`).src(`/scripts/client.mjs`)),
-        a.vac(!c.PROD) && E.script.props(A.type(`module`).src(cl.LIVE_CLIENT)),
       ),
       E.body.props(A.id(c.ID_TOP)).chi(
         Header(page),

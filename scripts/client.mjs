@@ -151,20 +151,22 @@ class CarouselNext extends CarouselBtn {
   }
 }
 
-export class Yt extends MixElem(dg.glob.HTMLAnchorElement) {
-  static customName = `a-yt`
+export class Embed extends MixElem(dg.glob.HTMLAnchorElement) {
+  static customName = `a-embed`
   static {dr.reg(this)}
 
   init(src, link) {
     const img = l.render(src.image())
     this.dataset.embed = l.render(src.embed())
 
-    return this.props(
-      A
-      .href(link)
-      .cls(`sf-embed preview`)
-      .style(img ? {backgroundImage: `url(${img})`} : undefined)
-    )
+    return this
+      .props(
+        A
+        .href(link)
+        .cls(`sf-embed block preview relative`)
+        .style(img ? {backgroundImage: `url(${img})`} : undefined)
+      )
+      .chi(E.span.props(A.cls(`fa fa-youtube-play --free size-larger abs-cen`)))
   }
 
   connectedCallback() {this.onclick = this.onClick}
